@@ -3,6 +3,7 @@
 #include <vector>
 
 #include <gphoto2/gphoto2-camera.h>
+#include <jsoncpp/dist/json/json.h>
 
 namespace orchid {
 
@@ -10,9 +11,14 @@ namespace orchid {
 	public:
 		camera(Camera*, GPContext*);
 		~camera();
+		Json::Value get_setting_tree();
 	private:
 		Camera* d_cam;
 		GPContext* d_ctx;
+
+		std::string get_camera_summary();
+		std::string get_driver_summary();
+		Json::Value get_list_data(CameraWidget*);
 	};
 
 	class camera_list {
@@ -28,6 +34,8 @@ namespace orchid {
 		CameraList* d_list;
 		CameraAbilitiesList* d_abilities;
 		GPPortInfoList* d_pi_list;
+
+		static std::unique_ptr<orchid::camera> handle_error(int, const char*, int);
 	};
 
 	using camera_ring = std::vector<std::unique_ptr<orchid::camera>>;
