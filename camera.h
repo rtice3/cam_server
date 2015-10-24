@@ -11,9 +11,12 @@ namespace orchid {
 	public:
 		camera(Camera*, GPContext*);
 		~camera();
-		Json::Value get_setting_tree();
+
+		Json::Value get_camera_config();
+		bool set_camera_config(Json::Value);
 	private:
 		Camera* d_cam;
+		CameraWidget* d_widget;
 		GPContext* d_ctx;
 
 		std::string get_camera_summary();
@@ -25,17 +28,24 @@ namespace orchid {
 	public:
 		camera_list();
 		~camera_list();
-		int refresh(GPContext*);
-		int size();
-		std::vector<std::string> get_name_list();
-		std::unique_ptr<orchid::camera> create_camera(int, GPContext*);
-		std::unique_ptr<orchid::camera> create_camera(std::string, GPContext*);
+
+		bool refresh_list(GPContext*);
+		Json::Value get_camera_tree(int);
+		Json::Value get_full_tree();
+
 	private:
 		CameraList* d_list;
 		CameraAbilitiesList* d_abilities;
 		GPPortInfoList* d_pi_list;
+		std::vector<std::unique_ptr<orchid::camera>> d_cam_ring;
 
-		static std::unique_ptr<orchid::camera> handle_error(int, const char*, int);
+		int size();
+		std::vector<std::string> get_name_list();
+		bool create_cameras(GPContext*);
+		std::unique_ptr<orchid::camera> create_camera(int, GPContext*);
+		std::unique_ptr<orchid::camera> create_camera(std::string, GPContext*);
+
+		static bool handle_error(int, const char*, int);
 	};
 
 	using camera_ring = std::vector<std::unique_ptr<orchid::camera>>;
@@ -44,11 +54,13 @@ namespace orchid {
 	public:
 		app();
 		~app();
-		bool init();
+
+		void init();
+		std::string get_tree();
+		bool set_value(int, Json::Value);
 	private:
 		GPContext* d_ctx;
 		orchid::camera_list d_cam_list;
-		camera_ring d_cam_ring;
 
 		static void ctx_error(GPContext*, const char*, void*);
 		static void ctx_status(GPContext*, const char*, void*);
