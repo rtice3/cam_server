@@ -1,7 +1,7 @@
 CXX = g++
-CXXFLAGS = -std=c++14 -Wall
-
 INCLUDEDIR = jsoncpp/dist/
+LIBS = -lgphoto2 -lgphoto2_port
+CXXFLAGS = --std=c++14 -Wall -I$(INCLUDEDIR) $(LIBS)
 
 EXECUTABLE = camera
 

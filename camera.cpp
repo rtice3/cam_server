@@ -27,16 +27,16 @@ Json::Value orchid::camera_list::get_camera_tree(int index) {
 
 Json::Value orchid::camera_list::get_full_tree() {
     Json::Value root;
-    for(int i = 0; i < d_cam_ring.size(); i++)
+    for(auto i = 0u; i < d_cam_ring.size(); i++)
         root[std::to_string(i)] = this->get_camera_tree(i);
     return root;
 }
 
 bool orchid::camera_list::set_camera_attribute(int index, Json::Value val) {
-    return d_cam_ring[index].set_camera_config(val);
+    return d_cam_ring[index]->set_camera_config(val);
 }
 
-int orchid::camera_list::size() { gp_list_count(d_list); }
+int orchid::camera_list::size() { return gp_list_count(d_list); }
 
 bool orchid::camera_list::create_cameras(GPContext* ctx) {
     for(int i = 0; i < this->size(); i++) {
@@ -55,7 +55,7 @@ std::vector<std::string> orchid::camera_list::get_name_list() {
 
     for(auto i = 0; i < this->size(); i++) {
         const char* name;
-        gp_list_get_name(d_list, i, name);
+        gp_list_get_name(d_list, i, &name);
         ret.push_back(std::string(name));
     }
     return ret;
@@ -115,7 +115,8 @@ std::unique_ptr<orchid::camera> orchid::camera_list::create_camera(int index, GP
 
 std::unique_ptr<orchid::camera> orchid::camera_list::create_camera(std::string name, GPContext* ctx) {
     int ret, index;
-    if((ret = gp_list_find_by_name(d_list, index, name.c_str())) == GP_OK)
+    auto cname = name.c_str();
+    if((ret = gp_list_find_by_name(d_list, &index, cname)) == GP_OK)
         return this->create_camera(index, ctx);
     return nullptr;
 }
@@ -126,7 +127,7 @@ std::unique_ptr<orchid::camera> orchid::camera_list::handle_error(int error, con
 }
 
 orchid::camera::camera(Camera* cam, GPContext* ctx) : d_cam(cam), d_ctx(ctx) { 
-    gp_camera_new(d_cam);
+    gp_camera_new(&d_cam);
 }
 
 orchid::camera::~camera() {
@@ -160,22 +161,25 @@ bool orchid::camera::set_camera_config(Json::Value root) {
     if(gp_widget_get_type(child, type) < GP_OK)
         return false;
 
-    switch(type) {
+    switch(*type) {
         case GP_WIDGET_MENU:
         case GP_WIDGET_RADIO:
         case GP_WIDGET_TEXT: {
-            if(gp_widget_set_value(child, root["value"].asCString()) < GP_OK)
+            auto temp = root["value"].asCString();
+            if(gp_widget_set_value(child, &temp) < GP_OK)
                 return false;
             return true;
         }
-        case GP_WINDGET_RANGE: {
-            if(gp_widget_set_value(child, root["value"].asFloat()) < GP_OK)
+        case GP_WIDGET_RANGE: {
+            auto temp = root["value"].asFloat();
+            if(gp_widget_set_value(child, &temp) < GP_OK)
                 return false;
             return true;
         }
         case GP_WIDGET_DATE:
         case GP_WIDGET_TOGGLE: {
-            if(gp_widget_set_value(child, root["value"].asInt()) < GP_OK)
+            auto temp = root["value"].asInt();
+            if(gp_widget_set_value(child, &temp) < GP_OK)
                 return false;
             return true;
         }
@@ -255,35 +259,35 @@ Json::Value orchid::camera::get_camera_config() {
             }
             case GP_WIDGET_TEXT: {
                 root[std::to_string(i)]["type"] = "text";
-                root[std::to_string(i)]["value"] = std::string((const char*)child_value);
+                root[std::to_string(i)]["value"] = Json::Value((const char*)child_value);
                 break;
             }
             case GP_WIDGET_RANGE: {
                 float min, max, inc;
                 root[std::to_string(i)]["type"] = "range";
                 if(gp_widget_get_range(child, &min, &max, &inc) < GP_OK)
-                    return ret_str;
+                    break;
                 root[std::to_string(i)]["min"] = Json::Value(min);
                 root[std::to_string(i)]["max"] = Json::Value(max);
                 root[std::to_string(i)]["inc"] = Json::Value(inc);
-                root[std::to_string(i)]["value"] = Json::Value(float(*child_value));
+                root[std::to_string(i)]["value"] = Json::Value(*(float*)child_value);
                 break;
             }
             case GP_WIDGET_TOGGLE: {
                 root[std::to_string(i)]["type"] = "toggle";
-                root[std::to_string(i)]["value"] = Json::Value(int(*child_value));
+                root[std::to_string(i)]["value"] = Json::Value(*(int*)child_value);
                 break;
             }
             case GP_WIDGET_RADIO: {
                 root[std::to_string(i)]["type"] = "radio";
                 root[std::to_string(i)]["choices"] = this->get_list_data(child);
-                root[std::to_string(i)]["value"] = std::to_string((const char*)child_value);
+                root[std::to_string(i)]["value"] = Json::Value((const char*)child_value);
                 break;
             }
             case GP_WIDGET_MENU: {
                 root[std::to_string(i)]["type"] = "menu";
                 root[std::to_string(i)]["choices"] = this->get_list_data(child);
-                root[std::to_string(i)]["value"] = std::to_string((const char*)child_value);
+                root[std::to_string(i)]["value"] = Json::Value((const char*)child_value);
                 break;
             }
             case GP_WIDGET_BUTTON: {
@@ -292,7 +296,7 @@ Json::Value orchid::camera::get_camera_config() {
             }
             case GP_WIDGET_DATE: {
                 root[std::to_string(i)]["type"] = "date";
-                root[std::to_string(i)]["value"] = Json::Value((int)*child_value);
+                root[std::to_string(i)]["value"] = Json::Value(*(int*)child_value);
                 break;
             }
             default: {
@@ -308,7 +312,7 @@ Json::Value orchid::camera::get_list_data(CameraWidget* child) {
     Json::Value vec;
     int numc = gp_widget_count_choices(child);
     if(numc < GP_OK)
-        return root;
+        return vec;
     for(int i = 0; i < numc; i++) {
         const char* namec;
         if(gp_widget_get_choice(child, i, &namec) < GP_OK)
@@ -321,8 +325,8 @@ Json::Value orchid::camera::get_list_data(CameraWidget* child) {
 orchid::app::app() {
     d_ctx = gp_context_new();
 
-    gp_context_set_error_func(d_ctx, camera_context::ctx_error, NULL);
-    gp_context_set_status_func(d_ctx, camera_context::ctx_status, NULL);
+    gp_context_set_error_func(d_ctx, orchid::app::ctx_error, NULL);
+    gp_context_set_status_func(d_ctx, orchid::app::ctx_status, NULL);
 }
 orchid::app::~app() {
     gp_context_unref(d_ctx);
@@ -341,7 +345,16 @@ std::string orchid::app::get_tree() {
     return writer.write(d_cam_list.get_full_tree());
 }
 
-bool orchid::set_value(int index, Json::Value val) {
+bool orchid::app::set_value(int index, Json::Value val) {
     return d_cam_list.set_camera_attribute(index, val);
 }
 
+void orchid::app::ctx_error(GPContext *context, const char *str, void *data) {
+        fprintf  (stderr, "\n*** Contexterror ***              \n%s\n",str);
+        fflush   (stderr);
+}
+
+void orchid::app::ctx_status(GPContext *context, const char *str, void *data) {
+        fprintf  (stderr, "%s\n", str);
+        fflush   (stderr);
+}

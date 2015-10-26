@@ -5,8 +5,8 @@
 #define DEBUG	1
 
 
-int main(int argc char** argc) {
-	orchid::app app();
+int main(int argc, char** argv) {
+	orchid::app app;
 
 	app.init();
 

@@ -32,7 +32,7 @@ namespace orchid {
 		bool refresh_list(GPContext*);
 		Json::Value get_camera_tree(int);
 		Json::Value get_full_tree();
-		bool set_camera_attribute(Json::Value);
+		bool set_camera_attribute(int, Json::Value);
 	private:
 		CameraList* d_list;
 		CameraAbilitiesList* d_abilities;
@@ -45,7 +45,7 @@ namespace orchid {
 		std::unique_ptr<orchid::camera> create_camera(int, GPContext*);
 		std::unique_ptr<orchid::camera> create_camera(std::string, GPContext*);
 
-		static bool handle_error(int, const char*, int);
+		static std::unique_ptr<orchid::camera> handle_error(int, const char*, int);
 	};
 
 	using camera_ring = std::vector<std::unique_ptr<orchid::camera>>;
