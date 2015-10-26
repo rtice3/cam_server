@@ -3,7 +3,7 @@
 #include <vector>
 
 #include <gphoto2/gphoto2-camera.h>
-#include <jsoncpp/dist/json/json.h>
+#include <json/json.h>
 
 namespace orchid {
 
@@ -32,7 +32,7 @@ namespace orchid {
 		bool refresh_list(GPContext*);
 		Json::Value get_camera_tree(int);
 		Json::Value get_full_tree();
-
+		bool set_camera_attribute(Json::Value);
 	private:
 		CameraList* d_list;
 		CameraAbilitiesList* d_abilities;
@@ -55,7 +55,7 @@ namespace orchid {
 		app();
 		~app();
 
-		void init();
+		bool init();
 		std::string get_tree();
 		bool set_value(int, Json::Value);
 	private:
