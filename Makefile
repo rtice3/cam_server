@@ -1,21 +1,20 @@
-CC=g++
+CXX = g++
+CXXFLAGS = -std=c++14 -Wall
 
-CFLAGS=-std=c++14 -Wall
-LDFLAGS=
-INCLUDEDIR=jsoncpp/dist
+INCLUDEDIR = jsoncpp/dist/
 
+EXECUTABLE = camera
 
-SOURCES=main.cpp camera.cpp jsoncpp/dist/jsoncpp.cpp
-OBJECTS=$(SOURCES:.cpp=.o)
+main: main.o camera.o jsoncpp.o
+	$(CXX) $(CXXFLAGS) -o $(EXECUTABLE) main.o camera.o jsoncpp.o
 
+main.o: main.cpp camera.h
+	$(CXX) $(CXXFLAGS) -c main.cpp
 
-EXECUTABLE=camera
+camera.o: camera.h
 
+jsoncpp.o: jsoncpp/dist/jsoncpp.cpp jsoncpp/dist/json/json.h
+	$(CXX) $(CXXFLAGS) -c jsoncpp/dist/jsoncpp.cpp
 
-all: $(SOURCES) $(EXECUTABLE)
-    
-$(EXECUTABLE): $(OBJECTS) 
-    $(CC) $(LDFLAGS) $(OBJECTS) -o $@
-
-.cpp.o:
-    $(CC) $(CFLAGS) -I$(INCLUDEDIR) $< -o $@
+clean:
+	rm camera *.o
