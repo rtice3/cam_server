@@ -1,4 +1,5 @@
 #include <cstdio>
+#include <iostream>
 
 #include "camera.h"
 
@@ -68,44 +69,44 @@ std::unique_ptr<orchid::camera> orchid::camera_list::create_camera(int index, GP
     CameraAbilities a;
     GPPortInfo pi;
     Camera* cam;
+    CameraAbilitiesList* abilities_list;
+    GPPortInfoList* pi_list;
 
     gp_list_get_name(d_list, index, &model);
     gp_list_get_value(d_list, index, &port);
+//    std::cout << "name: " << model << " port: " << port << std::endl;
 
     if((ret = gp_camera_new(&cam)) < GP_OK)
         return orchid::camera_list::handle_error(ret, __FILE__, __LINE__);
 
-    if(!d_abilities) {
-        if((ret = gp_abilities_list_new(&d_abilities)) < GP_OK)
-            return orchid::camera_list::handle_error(ret, __FILE__, __LINE__);
-        if((ret = gp_abilities_list_load(d_abilities, ctx)) < GP_OK)
-            return orchid::camera_list::handle_error(ret, __FILE__, __LINE__);
-    }
+    if((ret = gp_abilities_list_new(&abilities_list)) < GP_OK)
+        return orchid::camera_list::handle_error(ret, __FILE__, __LINE__);
+    if((ret = gp_abilities_list_load(abilities_list, ctx)) < GP_OK)
+        return orchid::camera_list::handle_error(ret, __FILE__, __LINE__);
+    
 
-    if((m = gp_abilities_list_lookup_model(d_abilities, model)) < GP_OK)
+    if((m = gp_abilities_list_lookup_model(abilities_list, model)) < GP_OK)
         return orchid::camera_list::handle_error(m, __FILE__, __LINE__);
-    if((ret = gp_abilities_list_get_abilities(d_abilities, m, &a)) < GP_OK)
+    if((ret = gp_abilities_list_get_abilities(abilities_list, m, &a)) < GP_OK)
         return orchid::camera_list::handle_error(ret, __FILE__, __LINE__);
     if((ret = gp_camera_set_abilities(cam, a)) < GP_OK)
         return orchid::camera_list::handle_error(ret, __FILE__, __LINE__);
 
-    if(!d_pi_list) {
-        if((ret = gp_port_info_list_new(&d_pi_list)) < GP_OK)
-            return orchid::camera_list::handle_error(ret, __FILE__, __LINE__);
-        if((ret = gp_port_info_list_load(d_pi_list)) < GP_OK)
-            return orchid::camera_list::handle_error(ret, __FILE__, __LINE__);
-        if((gp_port_info_list_count(d_pi_list)) < GP_OK)
-            return orchid::camera_list::handle_error(ret, __FILE__, __LINE__);
-    }
+    if((ret = gp_port_info_list_new(&pi_list)) < GP_OK)
+        return orchid::camera_list::handle_error(ret, __FILE__, __LINE__);
+    if((ret = gp_port_info_list_load(pi_list)) < GP_OK)
+        return orchid::camera_list::handle_error(ret, __FILE__, __LINE__);
+    if((gp_port_info_list_count(pi_list)) < GP_OK)
+        return orchid::camera_list::handle_error(ret, __FILE__, __LINE__);
 
-    if((p = gp_port_info_list_lookup_path(d_pi_list, port)) == GP_ERROR_UNKNOWN_PORT) {
+    if((p = gp_port_info_list_lookup_path(pi_list, port)) == GP_ERROR_UNKNOWN_PORT) {
         fprintf(stderr, "The port you specified ('%s') cannot be found.\n", port);
         return orchid::camera_list::handle_error(p, __FILE__, __LINE__);
     }
     else if(p < GP_OK)
         return orchid::camera_list::handle_error(p, __FILE__, __LINE__);
 
-    if((ret = gp_port_info_list_get_info(d_pi_list, p, &pi)) < GP_OK)
+    if((ret = gp_port_info_list_get_info(pi_list, p, &pi)) < GP_OK)
         return orchid::camera_list::handle_error(ret, __FILE__, __LINE__);
     if((ret = gp_camera_set_port_info(cam, pi)) < GP_OK)
         return orchid::camera_list::handle_error(ret, __FILE__, __LINE__);
@@ -190,6 +191,109 @@ bool orchid::camera::set_camera_config(Json::Value root) {
     return false;
 }
 
+Json::Value orchid::camera::get_child(CameraWidget* parent, int num_children) {
+    Json::Value root;
+    for(auto i = 0; i < num_children; i++) {
+        CameraWidget* child = nullptr;
+        CameraWidgetType child_type;
+        const char* child_name;
+        const char* child_label;
+        const char* child_info;
+
+        if(gp_widget_get_child(parent, i, &child) < GP_OK)
+            continue;
+
+        if(gp_widget_get_name(child, &child_name) < GP_OK)
+            root[std::to_string(i)]["name"] = "error";
+        else
+            root[std::to_string(i)]["name"] = std::string(child_name);
+
+        if(gp_widget_get_label(child, &child_label) < GP_OK)
+            root[std::to_string(i)]["label"] = "error";
+        else
+            root[std::to_string(i)]["label"] = std::string(child_label);
+
+        if(gp_widget_get_info(child, &child_info) < GP_OK)
+            root[std::to_string(i)]["info"] = "error";
+        else
+            root[std::to_string(i)]["info"] = std::string(child_info);
+
+        gp_widget_get_type(child, &child_type);
+
+        switch(child_type) {
+            case GP_WIDGET_WINDOW: {
+                root[std::to_string(i)]["type"] = "window";
+                break;
+            }
+            case GP_WIDGET_SECTION: {
+                root[std::to_string(i)]["type"] = "section";
+                break;
+            }
+            case GP_WIDGET_TEXT: {
+                const char* value;
+                root[std::to_string(i)]["type"] = "text";
+                gp_widget_get_value(child, &value);
+                root[std::to_string(i)]["value"] = Json::Value(value);
+                break;
+            }
+            case GP_WIDGET_RANGE: {
+                float min, max, inc, value;
+                gp_widget_get_value(child, &value);
+                root[std::to_string(i)]["type"] = "range";
+                if(gp_widget_get_range(child, &min, &max, &inc) < GP_OK)
+                    break;
+                root[std::to_string(i)]["min"] = Json::Value(min);
+                root[std::to_string(i)]["max"] = Json::Value(max);
+                root[std::to_string(i)]["inc"] = Json::Value(inc);
+                root[std::to_string(i)]["value"] = Json::Value(value);
+                break;
+            }
+            case GP_WIDGET_TOGGLE: {
+                int value;
+                gp_widget_get_value(child, &value);
+                root[std::to_string(i)]["type"] = "toggle";
+                root[std::to_string(i)]["value"] = Json::Value(value);
+                break;
+            }
+            case GP_WIDGET_RADIO: {
+                const char* value;
+                gp_widget_get_value(child, &value);
+                root[std::to_string(i)]["type"] = "radio";
+                root[std::to_string(i)]["choices"] = this->get_list_data(child);
+                root[std::to_string(i)]["value"] = Json::Value(value);
+                break;
+            }
+            case GP_WIDGET_MENU: {
+                const char* value;
+                gp_widget_get_value(child, &value);
+                root[std::to_string(i)]["type"] = "menu";
+                root[std::to_string(i)]["choices"] = this->get_list_data(child);
+                root[std::to_string(i)]["value"] = Json::Value(value);
+                break;
+            }
+            case GP_WIDGET_BUTTON: {
+                root[std::to_string(i)]["type"] = "button";
+                break;
+            }
+            case GP_WIDGET_DATE: {
+                int value;
+                gp_widget_get_value(child, &value);
+                root[std::to_string(i)]["type"] = "date";
+                root[std::to_string(i)]["value"] = Json::Value(value);
+                break;
+            }
+            default: {
+                root[std::to_string(i)]["type"] = "unknown";
+                break;
+            }
+        }
+        int sub_children = gp_widget_count_children(child);
+        if(sub_children > 0)
+            root[std::to_string(i)]["children"].append(this->get_child(child, sub_children));
+    }
+    return root;
+}
+
 Json::Value orchid::camera::get_camera_config() {
     int num_children;
     const char* parent_name;
@@ -216,95 +320,8 @@ Json::Value orchid::camera::get_camera_config() {
     num_children = gp_widget_count_children(d_widget);
     root["number_children"] = Json::Value(num_children);
 
-    for(auto i = 0; i < num_children; i++) {
-        CameraWidget* child = nullptr;
-        CameraWidgetType* child_type = nullptr;
-        const char* child_name;
-        const char* child_label;
-        const char* child_info;
-        void* child_value = nullptr;
+    root["children"] = this->get_child(d_widget, num_children);
 
-        if(gp_widget_get_child(d_widget, i, &child) < GP_OK)
-            continue;
-
-        if(gp_widget_get_name(child, &child_name) < GP_OK)
-            root[std::to_string(i)]["name"] = "error";
-        else
-            root[std::to_string(i)]["name"] = std::string(child_name);
-
-        if(gp_widget_get_label(child, &child_label) < GP_OK)
-            root[std::to_string(i)]["label"] = "error";
-        else
-            root[std::to_string(i)]["label"] = std::string(child_label);
-
-        if(gp_widget_get_info(child, &child_info) < GP_OK)
-            root[std::to_string(i)]["info"] = "error";
-        else
-            root[std::to_string(i)]["info"] = std::string(child_info);
-
-        if(gp_widget_get_type(child, child_type) < GP_OK)
-            continue;
-
-        if(gp_widget_get_value(child, child_value) < GP_OK)
-            continue;
-
-        switch(*child_type) {
-            case GP_WIDGET_WINDOW: {
-                root[std::to_string(i)]["type"] = "window";
-                break;
-            }
-            case GP_WIDGET_SECTION: {
-                root[std::to_string(i)]["type"] = "section";
-                break;
-            }
-            case GP_WIDGET_TEXT: {
-                root[std::to_string(i)]["type"] = "text";
-                root[std::to_string(i)]["value"] = Json::Value((const char*)child_value);
-                break;
-            }
-            case GP_WIDGET_RANGE: {
-                float min, max, inc;
-                root[std::to_string(i)]["type"] = "range";
-                if(gp_widget_get_range(child, &min, &max, &inc) < GP_OK)
-                    break;
-                root[std::to_string(i)]["min"] = Json::Value(min);
-                root[std::to_string(i)]["max"] = Json::Value(max);
-                root[std::to_string(i)]["inc"] = Json::Value(inc);
-                root[std::to_string(i)]["value"] = Json::Value(*(float*)child_value);
-                break;
-            }
-            case GP_WIDGET_TOGGLE: {
-                root[std::to_string(i)]["type"] = "toggle";
-                root[std::to_string(i)]["value"] = Json::Value(*(int*)child_value);
-                break;
-            }
-            case GP_WIDGET_RADIO: {
-                root[std::to_string(i)]["type"] = "radio";
-                root[std::to_string(i)]["choices"] = this->get_list_data(child);
-                root[std::to_string(i)]["value"] = Json::Value((const char*)child_value);
-                break;
-            }
-            case GP_WIDGET_MENU: {
-                root[std::to_string(i)]["type"] = "menu";
-                root[std::to_string(i)]["choices"] = this->get_list_data(child);
-                root[std::to_string(i)]["value"] = Json::Value((const char*)child_value);
-                break;
-            }
-            case GP_WIDGET_BUTTON: {
-                root[std::to_string(i)]["type"] = "button";
-                break;
-            }
-            case GP_WIDGET_DATE: {
-                root[std::to_string(i)]["type"] = "date";
-                root[std::to_string(i)]["value"] = Json::Value(*(int*)child_value);
-                break;
-            }
-            default: {
-                root[std::to_string(i)]["type"] = "unknown";
-                break;
-            }
-        }
-    }
     return root;
 }
 

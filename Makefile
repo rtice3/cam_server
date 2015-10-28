@@ -1,5 +1,5 @@
 CXX 		= g++
-CXXFLAGS 	= --std=c++14 -Wall
+CXXFLAGS 	= --std=c++14 -Wall -g -O0 -DDEBUG
 INCLUDES 	= -Ijsoncpp/dist/ -I/usr/local/include
 LFLAGS 		=
 LIBS 		= -lgphoto2 -lgphoto2_port

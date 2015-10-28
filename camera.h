@@ -19,6 +19,7 @@ namespace orchid {
 		CameraWidget* d_widget;
 		GPContext* d_ctx;
 
+		Json::Value get_child(CameraWidget*, int);
 		std::string get_camera_summary();
 		std::string get_driver_summary();
 		Json::Value get_list_data(CameraWidget*);
@@ -35,8 +36,6 @@ namespace orchid {
 		bool set_camera_attribute(int, Json::Value);
 	private:
 		CameraList* d_list;
-		CameraAbilitiesList* d_abilities;
-		GPPortInfoList* d_pi_list;
 		std::vector<std::unique_ptr<orchid::camera>> d_cam_ring;
 
 		int size();
