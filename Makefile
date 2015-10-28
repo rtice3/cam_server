@@ -1,20 +1,28 @@
-CXX = g++
-INCLUDEDIR = jsoncpp/dist/
-LIBS = -lgphoto2 -lgphoto2_port
-CXXFLAGS = --std=c++14 -Wall -I$(INCLUDEDIR) $(LIBS)
+CXX 		= g++
+CXXFLAGS 	= --std=c++14 -Wall
+INCLUDES 	= -Ijsoncpp/dist/ -I/usr/local/include
+LFLAGS 		=
+LIBS 		= -lgphoto2 -lgphoto2_port
 
-EXECUTABLE = camera
+SOURCES		= main.cpp camera.cpp jsoncpp/dist/jsoncpp.cpp
+OBJS 		= $(SOURCES:.cpp=.o)
+EXECUTABLE 	= camera
 
-main: main.o camera.o jsoncpp.o
-	$(CXX) $(CXXFLAGS) -o $(EXECUTABLE) main.o camera.o jsoncpp.o
+.PHONY: depend clean
 
-main.o: main.cpp camera.h
-	$(CXX) $(CXXFLAGS) -c main.cpp
+all: $(EXECUTABLE)
+	@echo  camera compiled successfully
 
-camera.o: camera.h
+$(EXECUTABLE): $(OBJS) 
+	$(CXX) $(CXXFLAGS) -o $(EXECUTABLE) $(OBJS) $(LFLAGS) $(LIBS)
 
-jsoncpp.o: jsoncpp/dist/jsoncpp.cpp jsoncpp/dist/json/json.h
-	$(CXX) $(CXXFLAGS) -c jsoncpp/dist/jsoncpp.cpp
+.cpp.o:
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
 
 clean:
-	rm camera *.o
+	$(RM) *.o *~ $(EXECUTABLE)
+
+depend: $(SOURCES)
+	makedepend $(INCLUDES) $^
+
+# DO NOT DELETE THIS LINE -- make depend needs it

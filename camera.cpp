@@ -122,7 +122,7 @@ std::unique_ptr<orchid::camera> orchid::camera_list::create_camera(std::string n
 }
 
 std::unique_ptr<orchid::camera> orchid::camera_list::handle_error(int error, const char* file, int line) {
-    printf("%s:%d ERROR# %d: %s", file, line, error, gp_port_result_as_string(error));
+    printf("%s:%d ERROR# %d: %s", file, line, error, gp_result_as_string(error));
     return nullptr;
 }
 
@@ -152,8 +152,8 @@ std::string orchid::camera::get_driver_summary() {
 }
 
 bool orchid::camera::set_camera_config(Json::Value root) {
-    CameraWidget* child;
-    CameraWidgetType* type;
+    CameraWidget* child = nullptr;
+    CameraWidgetType* type = nullptr;
 
     if(gp_widget_get_child_by_name(d_widget, root["name"].asCString(), &child) < GP_OK)
         return false;
@@ -217,12 +217,12 @@ Json::Value orchid::camera::get_camera_config() {
     root["number_children"] = Json::Value(num_children);
 
     for(auto i = 0; i < num_children; i++) {
-        CameraWidget* child;
-        CameraWidgetType* child_type;
+        CameraWidget* child = nullptr;
+        CameraWidgetType* child_type = nullptr;
         const char* child_name;
         const char* child_label;
         const char* child_info;
-        void* child_value;
+        void* child_value = nullptr;
 
         if(gp_widget_get_child(d_widget, i, &child) < GP_OK)
             continue;
