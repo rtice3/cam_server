@@ -11,7 +11,7 @@ EXECUTABLE 	= camera
 .PHONY: depend clean
 
 all: $(EXECUTABLE)
-	@echo  camera compiled successfully
+	@echo    $(EXECUTABLE) compiled successfully
 
 $(EXECUTABLE): $(OBJS) 
 	$(CXX) $(CXXFLAGS) -o $(EXECUTABLE) $(OBJS) $(LFLAGS) $(LIBS)
