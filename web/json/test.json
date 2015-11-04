@@ -1,0 +1,704 @@
+{
+   "cameras" : [
+      {
+         "driver" : "PTP2 driver\n(c) 2001-2005 by Mariusz Woloszyn <emsi@ipartners.pl>.\n(c) 2003-2015 by Marcus Meissner <marcus@jet.franken.de>.\nThis driver supports cameras that support PTP or PictBridge(tm), and\nMedia Players that support the Media Transfer Protocol (MTP).\n\nEnjoy!",
+         "label" : "Camera and Driver Configuration",
+         "name" : "main",
+         "summary" : "Manufacturer: Canon Inc.\nModel: Canon EOS REBEL T5\n  Version: 3-1.0.0\n  Serial Number: 83f66803d87e47bc98db4b174454f715\nVendor Extension ID: 0xb (1.0)\n\nCapture Formats: JPEG\nDisplay Formats: Association/Directory, Script, DPOF, MS AVI, MS Wave, JPEG, CRW, Unknown(b103), Unknown(bf02), Defined Type, Unknown(b104), Unknown(b105)\n\nDevice Capabilities:\n\tFile Download, File Deletion, File Upload\n\tNo Image Capture, No Open Capture, Canon EOS Capture, Canon EOS Shutter Button\n\nStorage Devices Summary:\n\nDevice Property Summary:\nProperty 0xd402:(read only) (type=0xffff) 'Canon EOS REBEL T5'\nProperty 0xd407:(read only) (type=0x6) 1\nProperty 0xd406:(readwrite) (type=0xffff) 'Unknown Initiator'\nProperty 0xd303:(read only) (type=0x2) 1\nBattery Level(0x5001):(read only) (type=0x2) Enumeration [100,0,75,0,50] value: 100% (100)\n",
+         "zchildren" : [
+            {
+               "info" : "",
+               "label" : "Camera Actions",
+               "name" : "actions",
+               "type" : "section",
+               "zchildren" : [
+                  [
+                     {
+                        "info" : "",
+                        "label" : "Synchronize camera date and time with PC",
+                        "name" : "syncdatetime",
+                        "type" : "toggle",
+                        "value" : 0
+                     },
+                     {
+                        "info" : "",
+                        "label" : "Synchronize camera date and time with PC",
+                        "name" : "syncdatetime",
+                        "type" : "toggle",
+                        "value" : 0
+                     },
+                     {
+                        "info" : "",
+                        "label" : "UI Lock",
+                        "name" : "uilock",
+                        "type" : "toggle",
+                        "value" : 2
+                     },
+                     {
+                        "info" : "",
+                        "label" : "Drive Canon DSLR Autofocus",
+                        "name" : "autofocusdrive",
+                        "type" : "toggle",
+                        "value" : 0
+                     },
+                     {
+                        "choices" : [ "Near 1", "Near 2", "Near 3", "None", "Far 1", "Far 2", "Far 3" ],
+                        "info" : "",
+                        "label" : "Drive Canon DSLR Manual focus",
+                        "name" : "manualfocusdrive",
+                        "type" : "radio",
+                        "value" : "None"
+                     },
+                     {
+                        "info" : "",
+                        "label" : "Cancel Canon DSLR Autofocus",
+                        "name" : "cancelautofocus",
+                        "type" : "toggle",
+                        "value" : 0
+                     },
+                     {
+                        "info" : "",
+                        "label" : "Canon EOS Zoom",
+                        "name" : "eoszoom",
+                        "type" : "text",
+                        "value" : "0"
+                     },
+                     {
+                        "info" : "",
+                        "label" : "Canon EOS Zoom Position",
+                        "name" : "eoszoomposition",
+                        "type" : "text",
+                        "value" : "0,0"
+                     },
+                     {
+                        "info" : "",
+                        "label" : "Canon EOS Viewfinder",
+                        "name" : "viewfinder",
+                        "type" : "toggle",
+                        "value" : 2
+                     },
+                     {
+                        "choices" : [
+                           "None",
+                           "Press Half",
+                           "Press Full",
+                           "Release Half",
+                           "Release Full",
+                           "Immediate",
+                           "Press 1",
+                           "Press 2",
+                           "Press 3",
+                           "Release 1",
+                           "Release 2",
+                           "Release 3"
+                        ],
+                        "info" : "",
+                        "label" : "Canon EOS Remote Release",
+                        "name" : "eosremoterelease",
+                        "type" : "radio",
+                        "value" : "None"
+                     }
+                  ]
+               ]
+            },
+            {
+               "info" : "",
+               "label" : "Camera Settings",
+               "name" : "settings",
+               "type" : "section",
+               "zchildren" : [
+                  [
+                     {
+                        "info" : "",
+                        "label" : "Camera Date and Time",
+                        "name" : "datetime",
+                        "type" : "date",
+                        "value" : 1446010670
+                     },
+                     {
+                        "info" : "",
+                        "label" : "Camera Date and Time",
+                        "name" : "datetime",
+                        "type" : "date",
+                        "value" : 1446010670
+                     },
+                     {
+                        "choices" : [ "None", "2 seconds", "4 seconds", "8 seconds", "Hold" ],
+                        "info" : "",
+                        "label" : "Quick Review Time",
+                        "name" : "reviewtime",
+                        "type" : "radio",
+                        "value" : "2 seconds"
+                     },
+                     {
+                        "choices" : [
+                           "TFT",
+                           "PC",
+                           "TFT + PC",
+                           "Setting 4",
+                           "Setting 5",
+                           "Setting 6",
+                           "Setting 7",
+                           "Off"
+                        ],
+                        "info" : "",
+                        "label" : "Camera Output",
+                        "name" : "output",
+                        "type" : "radio",
+                        "value" : "Off"
+                     },
+                     {
+                        "choices" : [ "None" ],
+                        "info" : "",
+                        "label" : "Recording Destination",
+                        "name" : "movierecordtarget",
+                        "type" : "radio",
+                        "value" : "None"
+                     },
+                     {
+                        "choices" : [ "1", "0" ],
+                        "info" : "",
+                        "label" : "EVF Mode",
+                        "name" : "evfmode",
+                        "type" : "radio",
+                        "value" : "1"
+                     },
+                     {
+                        "info" : "",
+                        "label" : "Owner Name",
+                        "name" : "ownername",
+                        "type" : "text",
+                        "value" : ""
+                     },
+                     {
+                        "info" : "",
+                        "label" : "Artist",
+                        "name" : "artist",
+                        "type" : "text",
+                        "value" : ""
+                     },
+                     {
+                        "info" : "",
+                        "label" : "Copyright",
+                        "name" : "copyright",
+                        "type" : "text",
+                        "value" : ""
+                     },
+                     {
+                        "info" : "",
+                        "label" : "Custom Functions Ex",
+                        "name" : "customfuncex",
+                        "type" : "text",
+                        "value" : "bc,4,1,2c,3,101,1,0,103,1,0,10f,1,0,2,2c,3,201,1,0,202,1,0,203,1,0,3,14,1,50e,1,0,4,38,4,701,1,0,704,1,0,70e,1,0,811,1,0,"
+                     },
+                     {
+                        "info" : "",
+                        "label" : "Focus Info",
+                        "name" : "focusinfo",
+                        "type" : "text",
+                        "value" : "eosversion=0,size=5184x3456,size2=5184x3456,points={{0,743,117,181},{-839,393,172,129},{839,393,172,129},{-1394,0,172,129},{0,0,224,222},{1394,0,172,129},{-839,-393,172,129},{839,-393,172,129},{0,-743,117,181}},select={},unknown={ff010000ffff}"
+                     },
+                     {
+                        "info" : "",
+                        "label" : "Auto Power Off",
+                        "name" : "autopoweroff",
+                        "type" : "text",
+                        "value" : "0"
+                     },
+                     {
+                        "info" : "",
+                        "label" : "Depth of Field",
+                        "name" : "depthoffield",
+                        "type" : "text",
+                        "value" : "0"
+                     },
+                     {
+                        "choices" : [ "Internal RAM", "Memory card" ],
+                        "info" : "",
+                        "label" : "Capture Target",
+                        "name" : "capturetarget",
+                        "type" : "radio",
+                        "value" : "Internal RAM"
+                     },
+                     {
+                        "info" : "",
+                        "label" : "Capture",
+                        "name" : "capture",
+                        "type" : "toggle",
+                        "value" : 0
+                     }
+                  ]
+               ]
+            },
+            {
+               "info" : "",
+               "label" : "Camera Status Information",
+               "name" : "status",
+               "type" : "section",
+               "zchildren" : [
+                  [
+                     {
+                        "info" : "",
+                        "label" : "Serial Number",
+                        "name" : "serialnumber",
+                        "type" : "text",
+                        "value" : "83f66803d87e47bc98db4b174454f715"
+                     },
+                     {
+                        "info" : "",
+                        "label" : "Camera Manufacturer",
+                        "name" : "manufacturer",
+                        "type" : "text",
+                        "value" : "Canon Inc."
+                     },
+                     {
+                        "info" : "",
+                        "label" : "Camera Model",
+                        "name" : "cameramodel",
+                        "type" : "text",
+                        "value" : "Canon EOS REBEL T5"
+                     },
+                     {
+                        "info" : "",
+                        "label" : "Device Version",
+                        "name" : "deviceversion",
+                        "type" : "text",
+                        "value" : "3-1.0.0"
+                     },
+                     {
+                        "info" : "",
+                        "label" : "Vendor Extension",
+                        "name" : "vendorextension",
+                        "type" : "text",
+                        "value" : "None"
+                     },
+                     {
+                        "info" : "",
+                        "label" : "Camera Model",
+                        "name" : "model",
+                        "type" : "text",
+                        "value" : "2147484455"
+                     },
+                     {
+                        "info" : "",
+                        "label" : "PTP Version",
+                        "name" : "ptpversion",
+                        "type" : "text",
+                        "value" : "256"
+                     },
+                     {
+                        "info" : "",
+                        "label" : "Battery Level",
+                        "name" : "batterylevel",
+                        "type" : "text",
+                        "value" : "100%"
+                     },
+                     {
+                        "info" : "",
+                        "label" : "Lens Name",
+                        "name" : "lensname",
+                        "type" : "text",
+                        "value" : ""
+                     },
+                     {
+                        "info" : "",
+                        "label" : "Serial Number",
+                        "name" : "eosserialnumber",
+                        "type" : "text",
+                        "value" : "172073022990"
+                     },
+                     {
+                        "info" : "",
+                        "label" : "Shutter Counter",
+                        "name" : "shuttercounter",
+                        "type" : "text",
+                        "value" : "969"
+                     },
+                     {
+                        "info" : "",
+                        "label" : "Available Shots",
+                        "name" : "availableshots",
+                        "type" : "text",
+                        "value" : "0"
+                     }
+                  ]
+               ]
+            },
+            {
+               "info" : "",
+               "label" : "Image Settings",
+               "name" : "imgsettings",
+               "type" : "section",
+               "zchildren" : [
+                  [
+                     {
+                        "choices" : [
+                           "Large Fine JPEG",
+                           "Large Normal JPEG",
+                           "Medium Fine JPEG",
+                           "Medium Normal JPEG",
+                           "Small Fine JPEG  (S1 Fine)",
+                           "Small Normal JPEG (S1 Normal)",
+                           "Smaller JPEG (S2)",
+                           "Tiny JPEG (S3)",
+                           "RAW + Large Fine JPEG",
+                           "RAW"
+                        ],
+                        "info" : "",
+                        "label" : "Image Format",
+                        "name" : "imageformat",
+                        "type" : "radio",
+                        "value" : "Large Fine JPEG"
+                     },
+                     {
+                        "choices" : [
+                           "Large Fine JPEG",
+                           "Large Normal JPEG",
+                           "Medium Fine JPEG",
+                           "Medium Normal JPEG",
+                           "Small Fine JPEG  (S1 Fine)",
+                           "Small Normal JPEG (S1 Normal)",
+                           "Smaller JPEG (S2)",
+                           "Tiny JPEG (S3)",
+                           "RAW + Large Fine JPEG",
+                           "RAW"
+                        ],
+                        "info" : "",
+                        "label" : "Image Format SD",
+                        "name" : "imageformatsd",
+                        "type" : "radio",
+                        "value" : "Large Fine JPEG"
+                     },
+                     {
+                        "choices" : [ "Auto", "100", "200", "400", "800", "1600", "3200", "6400" ],
+                        "info" : "",
+                        "label" : "ISO Speed",
+                        "name" : "iso",
+                        "type" : "radio",
+                        "value" : "Auto"
+                     },
+                     {
+                        "choices" : [
+                           "Auto",
+                           "Daylight",
+                           "Shadow",
+                           "Cloudy",
+                           "Tungsten",
+                           "Fluorescent",
+                           "Flash",
+                           "Manual"
+                        ],
+                        "info" : "",
+                        "label" : "WhiteBalance",
+                        "name" : "whitebalance",
+                        "type" : "radio",
+                        "value" : "Auto"
+                     },
+                     {
+                        "choices" : [
+                           "-9",
+                           "-8",
+                           "-7",
+                           "-6",
+                           "-5",
+                           "-4",
+                           "-3",
+                           "-2",
+                           "-1",
+                           "0",
+                           "1",
+                           "2",
+                           "3",
+                           "4",
+                           "5",
+                           "6",
+                           "7",
+                           "8",
+                           "9"
+                        ],
+                        "info" : "",
+                        "label" : "WhiteBalance Adjust A",
+                        "name" : "whitebalanceadjusta",
+                        "type" : "radio",
+                        "value" : "0"
+                     },
+                     {
+                        "choices" : [
+                           "-9",
+                           "-8",
+                           "-7",
+                           "-6",
+                           "-5",
+                           "-4",
+                           "-3",
+                           "-2",
+                           "-1",
+                           "0",
+                           "1",
+                           "2",
+                           "3",
+                           "4",
+                           "5",
+                           "6",
+                           "7",
+                           "8",
+                           "9"
+                        ],
+                        "info" : "",
+                        "label" : "WhiteBalance Adjust B",
+                        "name" : "whitebalanceadjustb",
+                        "type" : "radio",
+                        "value" : "0"
+                     },
+                     {
+                        "info" : "",
+                        "label" : "WhiteBalance X A",
+                        "name" : "whitebalancexa",
+                        "type" : "text",
+                        "value" : "0"
+                     },
+                     {
+                        "info" : "",
+                        "label" : "WhiteBalance X B",
+                        "name" : "whitebalancexb",
+                        "type" : "text",
+                        "value" : "0"
+                     },
+                     {
+                        "choices" : [ "sRGB", "AdobeRGB" ],
+                        "info" : "",
+                        "label" : "Color Space",
+                        "name" : "colorspace",
+                        "type" : "radio",
+                        "value" : "sRGB"
+                     }
+                  ]
+               ]
+            },
+            {
+               "info" : "",
+               "label" : "Capture Settings",
+               "name" : "capturesettings",
+               "type" : "section",
+               "zchildren" : [
+                  [
+                     {
+                        "choices" : [ "Manual" ],
+                        "info" : "",
+                        "label" : "Focus Mode",
+                        "name" : "focusmode",
+                        "type" : "radio",
+                        "value" : "Manual"
+                     },
+                     {
+                        "choices" : [
+                           "P",
+                           "TV",
+                           "AV",
+                           "Manual",
+                           "Bulb",
+                           "A_DEP",
+                           "DEP",
+                           "Custom",
+                           "Lock",
+                           "Green",
+                           "Night Portrait",
+                           "Sports",
+                           "Portrait",
+                           "Landscape",
+                           "Closeup",
+                           "Flash Off"
+                        ],
+                        "info" : "",
+                        "label" : "Canon Auto Exposure Mode",
+                        "name" : "autoexposuremode",
+                        "type" : "radio",
+                        "value" : "Manual"
+                     },
+                     {
+                        "choices" : [
+                           "Single",
+                           "Continuous",
+                           "Timer 10 sec",
+                           "Timer 2 sec",
+                           "Unknown value 0007"
+                        ],
+                        "info" : "",
+                        "label" : "Drive Mode",
+                        "name" : "drivemode",
+                        "type" : "radio",
+                        "value" : "Single"
+                     },
+                     {
+                        "choices" : [
+                           "Auto",
+                           "Standard",
+                           "Portrait",
+                           "Landscape",
+                           "Neutral",
+                           "Faithful",
+                           "Monochrome",
+                           "User defined 1",
+                           "User defined 2",
+                           "User defined 3"
+                        ],
+                        "info" : "",
+                        "label" : "Picture Style",
+                        "name" : "picturestyle",
+                        "type" : "radio",
+                        "value" : "Auto"
+                     },
+                     {
+                        "choices" : [ "Unknown value 0000" ],
+                        "info" : "",
+                        "label" : "Aperture",
+                        "name" : "aperture",
+                        "type" : "radio",
+                        "value" : "Unknown value 0000"
+                     },
+                     {
+                        "choices" : [
+                           "bulb",
+                           "30",
+                           "25",
+                           "20",
+                           "15",
+                           "13",
+                           "10",
+                           "8",
+                           "6",
+                           "5",
+                           "4",
+                           "3.2",
+                           "2.5",
+                           "2",
+                           "1.6",
+                           "1.3",
+                           "1",
+                           "0.8",
+                           "0.6",
+                           "0.5",
+                           "0.4",
+                           "0.3",
+                           "1/4",
+                           "1/5",
+                           "1/6",
+                           "1/8",
+                           "1/10",
+                           "1/13",
+                           "1/15",
+                           "1/20",
+                           "1/25",
+                           "1/30",
+                           "1/40",
+                           "1/50",
+                           "1/60",
+                           "1/80",
+                           "1/100",
+                           "1/125",
+                           "1/160",
+                           "1/200",
+                           "1/250",
+                           "1/320",
+                           "1/400",
+                           "1/500",
+                           "1/640",
+                           "1/800",
+                           "1/1000",
+                           "1/1250",
+                           "1/1600",
+                           "1/2000",
+                           "1/2500",
+                           "1/3200",
+                           "1/4000"
+                        ],
+                        "info" : "",
+                        "label" : "Shutter Speed",
+                        "name" : "shutterspeed",
+                        "type" : "radio",
+                        "value" : "1/250"
+                     },
+                     {
+                        "choices" : [ "Evaluative", "Partial", "Center-weighted average" ],
+                        "info" : "",
+                        "label" : "Metering Mode",
+                        "name" : "meteringmode",
+                        "type" : "radio",
+                        "value" : "Evaluative"
+                     },
+                     {
+                        "info" : "",
+                        "label" : "Bracket Mode",
+                        "name" : "bracketmode",
+                        "type" : "text",
+                        "value" : "0"
+                     },
+                     {
+                        "choices" : [
+                           "off",
+                           "+/- 1/3",
+                           "+/- 2/3",
+                           "+/- 1",
+                           "+/- 1 1/3",
+                           "+/- 1 2/3",
+                           "+/- 2"
+                        ],
+                        "info" : "",
+                        "label" : "Auto Exposure Bracketing",
+                        "name" : "aeb",
+                        "type" : "radio",
+                        "value" : "off"
+                     }
+                  ]
+               ]
+            },
+            {
+               "info" : "",
+               "label" : "Other PTP Device Properties",
+               "name" : "other",
+               "type" : "section",
+               "zchildren" : [
+                  [
+                     {
+                        "info" : "",
+                        "label" : "PTP Property 0xd402",
+                        "name" : "d402",
+                        "type" : "text",
+                        "value" : "Canon EOS REBEL T5"
+                     },
+                     {
+                        "info" : "",
+                        "label" : "PTP Property 0xd407",
+                        "name" : "d407",
+                        "type" : "text",
+                        "value" : "1"
+                     },
+                     {
+                        "info" : "",
+                        "label" : "PTP Property 0xd406",
+                        "name" : "d406",
+                        "type" : "text",
+                        "value" : "Unknown Initiator"
+                     },
+                     {
+                        "info" : "",
+                        "label" : "PTP Property 0xd303",
+                        "name" : "d303",
+                        "type" : "text",
+                        "value" : "1"
+                     },
+                     {
+                        "choices" : [ "100", "0", "75", "0", "50" ],
+                        "info" : "",
+                        "label" : "Battery Level",
+                        "name" : "5001",
+                        "type" : "menu",
+                        "value" : "100"
+                     }
+                  ]
+               ]
+            }
+         ]
+      }
+   ]
+}

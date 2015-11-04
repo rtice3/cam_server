@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="Description" content="" />
+		<title>Orchid Camera Control</title>
+
+		<link href="css/bootstrap.min.css" rel="stylesheet">
+		<link href="css/styles.css" rel="stylesheet">
+		
+	</head>
+	<body ng-app="angular_app">
+		<div id="loading">
+			<div id="loading_inner">
+	        	<div class="spinner">
+	        		<div class="bounce1"></div>
+	        		<div class="bounce2"></div>
+	        		<div class="bounce3"></div>
+	        	</div>
+	        </div>
+    	</div>
+	    <div id="content" ng-view></div> <!-- content -->
+		<!-- FOOTER -->
+      	<bottom-footer class="footer"></bottom-footer>
+		
+	    <!-- Placed at the end of the document so the pages load faster -->
+	    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+	    <script src="js/bootstrap.min.js"></script>
+	    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.2/angular.min.js"></script>
+	    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.2/angular-route.min.js"></script>
+	    <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.4.2/angular-animate.min.js"></script>
+	    <script src="js/ui-bootstrap-tpls-0.12.0.min.js"></script>
+	    <script src="js/angular_ctrl.js"></script>
+	</body>
+</html>

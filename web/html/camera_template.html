@@ -1,0 +1,45 @@
+<script type="text/ng-template" id="json_recursion.html">
+	<div ng-switch="{{z.type}}">
+		<div ng-switch-when="section">
+			<uib-accordion close-others=false>
+				<uib-accordion-group heading="{{z.label}}" ng-repeat="z in z.zchildren" ng-include="'json_recursion.html'">
+				</uib-accordion-group>
+			</uib-accordion>
+		</div>
+		<div ng-switch-when="text">
+			<h4>{{z.label}}</h4>
+			<pre>{{z.value}}</pre>
+		</div>
+		<div ng-switch-when="range">
+		</div>
+		<div ng-switch-when="toggle">
+			<button type="button" class="btn btn-primary" ng-model="{{z.name}}" uib-btn-checkbox btn-checkbox-true="1" btn-checkbox-false="0">
+        		{{z.label}}
+    		</button>
+		</div>
+		<div ng-switch-when="radio">
+			<h4>{{z.label}}</h4>
+			<div class="btn-group">
+        		<label class="btn btn-primary" ng-repeat="b in z.choices" ng-model="{{z.name}}" uib-btn-radio="'{{b}}'">
+        			{{b}}
+        		</label>
+    		</div>
+		</div>
+		<div ng-switch-when="menu">
+		</div>
+		<div ng-switch-when="date">
+		</div>
+		<div ng-switch-default>
+		</div>
+	</div>
+</script>
+	
+
+<div id="content_panel">
+	<uib-tabset>
+		<uib-tab ng-repeat="t in ctrl.data.cameras" heading="{{t.name}}">
+      		<div ng-repeat="z in t.zchildren" ng-include="'json_recursion.html'">
+      		</div>
+    	</uib-tab>
+	</uib-tabset>
+</div>
