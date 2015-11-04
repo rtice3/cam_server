@@ -6,7 +6,7 @@ LIBS 		= -lgphoto2 -lgphoto2_port
 
 SOURCES		= main.cpp camera.cpp jsoncpp/dist/jsoncpp.cpp
 OBJS 		= $(SOURCES:.cpp=.o)
-EXECUTABLE 	= camera
+EXECUTABLE 	= camera.bin
 
 .PHONY: depend clean
 

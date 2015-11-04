@@ -2,7 +2,7 @@
 	<div ng-switch on="z.type">
 		<div ng-switch-when="section">
 			<uib-accordion>
-				<uib-accordion-group heading="z.label">
+				<uib-accordion-group heading="{{z.label}}">
 					<div ng-if="z.zchildren">
 						<div ng-repeat="z in z.zchildren" ng-include="'json_recursion.html'">
 						</div>
@@ -38,8 +38,8 @@
 	
 
 <div id="content_panel">
-	<uib-tabset justified="true">
-		<uib-tab ng-repeat="t in ctrl.data.cameras" heading="t.name">
+	<uib-tabset>
+		<uib-tab ng-repeat="t in ctrl.data.cameras" heading="{{t.name}}">
       		<div ng-repeat="z in t.zchildren" ng-include="'json_recursion.html'">
       		</div>
     	</uib-tab>
