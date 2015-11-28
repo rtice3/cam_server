@@ -26,6 +26,7 @@
     };
     return loader;
   }]);
+
   app.config(['$httpProvider', function($httpProvider) {  
     $httpProvider.interceptors.push('loading');
   }]);
@@ -33,9 +34,16 @@
   app.controller('camera_ctrl', [ '$http', function($http) {
     var store = this;
     store.data = [];
+
     $http.get("json/test.json").success(function(response) {
       store.data = response;
-      store.signature = true;
     });
+
+    $scope.valChange = function(name, value) {
+      console.log({
+        "name": name,
+        "value": value
+      });
+    };
   }]);
 })();

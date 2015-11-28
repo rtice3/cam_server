@@ -1,6 +1,6 @@
 <script type="text/ng-template" id="json_recursion.html">
 	<div ng-switch on="z.type">
-		<div ng-switch-when="section">
+		<div class="ctrl-section" ng-switch-when="section">
 			<uib-accordion>
 				<uib-accordion-group heading="{{z.label}}">
 					<div ng-if="z.zchildren">
@@ -10,28 +10,28 @@
 				</uib-accordion-group>
 			</uib-accordion>
 		</div>
-		<div ng-switch-when="text">
+		<div class="ctrl-text" ng-switch-when="text">
 			<h4>{{z.label}}</h4>
 			<pre>{{z.value}}</pre>
 		</div>
-		<div ng-switch-when="range">
+		<div class="ctrl-range" ng-switch-when="range">
 		</div>
-		<div ng-switch-when="toggle">
-			<button type="button" class="btn btn-primary" ng-model="z.name" uib-btn-checkbox btn-checkbox-true="1" btn-checkbox-false="0">
+		<div class="ctrl-toggle" ng-switch-when="toggle">
+			<button type="button" class="btn btn-primary" ng-model="z.name" ng-change='togglebtnChange(z.name, z.name)' uib-btn-checkbox btn-checkbox-true="1" btn-checkbox-false="0">
         		{{z.label}}
     		</button>
 		</div>
-		<div ng-switch-when="radio">
+		<div class="ctrl-radio" ng-switch-when="radio">
 			<h4>{{z.label}}</h4>
 			<div class="btn-group">
-        		<label class="btn btn-primary" ng-repeat="b in z.choices" ng-model="z.name" uib-btn-radio="b">
+        		<label class="btn btn-primary" ng-repeat="b in z.choices" ng-model="z.name" ng-change='valChange(z.name, b)' uib-btn-radio="b">
         			{{b}}
         		</label>
     		</div>
 		</div>
-		<div ng-switch-when="menu">
+		<div class="ctrl-menu" ng-switch-when="menu">
 		</div>
-		<div ng-switch-when="date">
+		<div class="ctrl-date" ng-switch-when="date">
 		</div>
 	</div>
 </script>
