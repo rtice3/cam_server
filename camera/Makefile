@@ -1,10 +1,10 @@
 CXX 		= g++
 CXXFLAGS 	= --std=c++14 -Wall -g -O0 -DDEBUG
-INCLUDES 	= -Ijsoncpp/dist/ -I/usr/local/include
+INCLUDES 	= -I../jsoncpp/dist/ -I/usr/local/include
 LFLAGS 		=
-LIBS 		= -lgphoto2 -lgphoto2_port
+LIBS 		= -lgphoto2 -lgphoto2_port -lcgicc
 
-SOURCES		= main.cpp camera.cpp jsoncpp/dist/jsoncpp.cpp
+SOURCES		= main.cpp camera.cpp ../jsoncpp/dist/jsoncpp.cpp
 OBJS 		= $(SOURCES:.cpp=.o)
 EXECUTABLE 	= camera
 

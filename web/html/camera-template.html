@@ -17,21 +17,24 @@
 		<div class="ctrl-range" ng-switch-when="range">
 		</div>
 		<div class="ctrl-toggle" ng-switch-when="toggle">
-			<button type="button" class="btn btn-primary" ng-model="z.name" ng-change='togglebtnChange(z.name, z.name)' uib-btn-checkbox btn-checkbox-true="1" btn-checkbox-false="0">
-        		{{z.label}}
+			<h4>{{z.label}}</h4>
+			<button type="button" class="btn btn-primary" ng-model="z.value" ng-change='valChange(z.name, z.value)' uib-btn-checkbox btn-checkbox-true="1" btn-checkbox-false="0">
+        		{{z.value}}
     		</button>
 		</div>
 		<div class="ctrl-radio" ng-switch-when="radio">
 			<h4>{{z.label}}</h4>
 			<div class="btn-group">
-        		<label class="btn btn-primary" ng-repeat="b in z.choices" ng-model="z.name" ng-change='valChange(z.name, b)' uib-btn-radio="b">
+        		<label class="btn btn-primary" ng-repeat="b in z.choices" ng-model="z.value" ng-change='valChange(z.name, z.value)' uib-btn-radio="b">
         			{{b}}
         		</label>
     		</div>
 		</div>
 		<div class="ctrl-menu" ng-switch-when="menu">
+			<h4>{{z.label}}</h4>
 		</div>
 		<div class="ctrl-date" ng-switch-when="date">
+			<h4>{{z.label}}</h4>
 		</div>
 	</div>
 </script>

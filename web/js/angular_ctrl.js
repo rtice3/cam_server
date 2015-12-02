@@ -31,11 +31,15 @@
     $httpProvider.interceptors.push('loading');
   }]);
 
-  app.controller('camera_ctrl', [ '$http', function($http) {
+  app.controller('camera_ctrl', [ '$http', '$scope', function($http, $scope) {
     var store = this;
     store.data = [];
 
-    $http.get("json/test.json").success(function(response) {
+//    $http.get("json/test.json").success(function(response) {
+//      store.data = response;
+//    });
+
+    $http.post("fcgi/cam_server.fcgi", "refresh").success(function(response) {
       store.data = response;
     });
 
