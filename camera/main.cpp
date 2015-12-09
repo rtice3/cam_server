@@ -1,82 +1,71 @@
-#include <boost/date_time/posix_time/posix_time.hpp>
-#include <fstream>
-#include <fastcgi++/request.hpp>
-#include <fastcgi++/manager.hpp>
-
 #include "camera.h"
+#include "mongoose.h"
 
-void error_log(const char* msg) {
-   static std::ofstream error;
-   if(!error.is_open()) {
-      error.open("/tmp/errlog", std::ios_base::out | std::ios_base::app);
-      error.imbue(boost::locale(error.getloc(), new boost::posix_time::time_facet()));
+static orchid::app app;
+static const char* s_http_port = "8000";
+static struct mg_serve_http_opts s_http_server_opts;
+
+static void ev_handler(struct mg_connection* nc, int ev, void* ev_data) {
+   struct http_message* hm = (struct http_message*)ev_data;
+
+   switch(ev) {
+      case MG_EV_HTTP_REQUEST: {
+         if(mg_vcmp(&hm->method, "POST") == 0) {
+            if(mg_vcmp(&hm->uri, "/val") == 0) {
+               std::string ret;
+               if(app.set_value(std::string(hm->body.p, hm->body.len)))
+                  ret = "true";
+               else
+                  ret = "false";
+               mg_printf(nc, "HTTP/1.1 200 OK\r\nContent-Length: %d\r\n"
+                   "Content-Type: text/plain\r\n\r\n%s",
+                   ret.size(), ret.c_str());
+            }
+            else
+               break;
+         }
+         else {
+            if(mg_vcmp(&hm->uri, "refresh.live") == 0) {
+               auto ret = app.get_tree();
+               mg_printf(nc, "HTTP/1.1 200 OK\r\nContent-Length: %d\r\n"
+                   "Content-Type: application/json\r\n\r\n%s",
+                   ret.size(), ret.c_str());
+            }
+            else {
+               mg_serve_http(nc, hm, s_http_server_opts);
+            }
+         }
+         break;
+      }
+      default:
+         break;
    }
-   error << '[' << boost::posix_time::second_clock::local_time() << "] " << msg << std::endl;
 }
 
-class HelloWorld: public Fastcgipp::Request<wchar_t> {
-   bool response() {
-      wchar_t russian[]={ 0x041f, 0x0440, 0x0438, 0x0432, 0x0435, 0x0442, 0x0020, 0x043c, 0x0438, 0x0440, 0x0000 };
-      wchar_t chinese[]={ 0x4e16, 0x754c, 0x60a8, 0x597d, 0x0000 };
-      wchar_t greek[]={ 0x0393, 0x03b5, 0x03b9, 0x03b1, 0x0020, 0x03c3, 0x03b1, 0x03c2, 0x0020, 0x03ba, 0x03cc, 0x03c3, 0x03bc, 0x03bf, 0x0000 };
-      wchar_t japanese[]={ 0x4eca, 0x65e5, 0x306f, 0x4e16, 0x754c, 0x0000 };
-      wchar_t runic[]={ 0x16ba, 0x16d6, 0x16da, 0x16df, 0x0020, 0x16b9, 0x16df, 0x16c9, 0x16da, 0x16de, 0x0000 };
-      out << "Content-Type: text/html; charset=utf-8\r\n\r\n";
-      out << "<html><head><meta http-equiv='Content-Type' content='text/html; charset=utf-8' />";
-      out << "<title>fastcgi++: Hello World in UTF-8</title></head><body>";
-      out << "English: Hello World<br />";
-      out << "Russian: " << russian << "<br />";
-      out << "Greek: " << greek << "<br />";
-      out << "Chinese: " << chinese << "<br />";
-      out << "Japanese: " << japanese << "<br />";
-      out << "Runic English?: " << runic << "<br />";
-      out << "</body></html>";
-      err << "Hello apache error log";
-      return true;
-   }
-};
-int main()
-{
-   try
-   {
-      Fastcgipp::Manager<HelloWorld> fcgi;
-      fcgi.handler();
-   }
-   catch(std::exception& e)
-   {
-      error_log(e.what());
-   }
-}
 
 int main(int argc, char** argv) {
-	orchid::app app;
+	struct mg_mgr mgr;
+   struct mg_connection* nc;
 
 	try {
-		cgicc::Cgicc cgicc;
-
 		app.init();
 
-		auto env = cgicc.getEnvironment();
-		if(env.getRequestMethod() == "GET") {
-			// TODO: uhhh?
-		}
-		else if(env.getRequestMethod() == "POST") {
-			std::string post_data = env.getPostData();
+      mg_mgr_init(&mgr, NULL);
+      nc = mg_bind(&mgr, s_http_port, ev_handler);
 
-			if(post_data == "refresh") {
-				std::cout << "Content-type:application/json\r\n\r\n";
-				std::cout << app.get_tree();
-			}
-			else {
-				// TODO: pass JSON data to set value
-			}
-		}
-		else {
-			// TODO: uhhhhh??
-		}
+      mg_set_protocol_http_websocket(nc);
+      s_http_server_opts.document_root = "../web";
+
+      for(;;) {
+         mg_mgr_poll(&mgr, 1000);
+      }
+
+      mg_mgr_free(&mgr);
+
 	}
-	catch(std::exception& e) {
-
+	catch(cam_exception& e) {
+      std::cout << e.what() << std::endl;
+      exit(1);
 	}
 
 	return 0;

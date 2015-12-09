@@ -1,28 +1,35 @@
-CXX 		= g++
-CXXFLAGS 	= --std=c++14 -Wall -g -O0 -DDEBUG
-INCLUDES 	= -I../jsoncpp/dist/ -I/usr/local/include
-LFLAGS 		=
-LIBS 		= -lgphoto2 -lgphoto2_port -lcgicc
+CXX 			:= g++
+CXXFLAGS 		:= --std=c++14 -Wall -O0 -g
+INCLUDES 		:= -I../jsoncpp/dist/ -I../mongoose -I/usr/local/include
+LFLAGS 			:= 
+LIBS 			:= -lgphoto2 -lgphoto2_port
 
-SOURCES		= main.cpp camera.cpp ../jsoncpp/dist/jsoncpp.cpp
-OBJS 		= $(SOURCES:.cpp=.o)
-EXECUTABLE 	= camera
+SOURCES			:= $(wildcard *.cpp) ../mongoose/mongoose.c ../jsoncpp/dist/jsoncpp.cpp
+OBJS 			:= $(SOURCES:.cpp=.o)
+DEPFILE			:= Makefile.dep
 
-.PHONY: depend clean
+TARGET 			:= camera.bin
 
-all: $(EXECUTABLE)
-	@echo  camera compiled successfully
 
-$(EXECUTABLE): $(OBJS) 
-	$(CXX) $(CXXFLAGS) -o $(EXECUTABLE) $(OBJS) $(LFLAGS) $(LIBS)
+.PHONY: all clean
+
+all: $(TARGET)
+	@echo $(TARGET) compiled successfully
+
+$(TARGET): $(OBJS)
+	$(CXX) $(CXXFLAGS) -o $(TARGET) $(OBJS) $(LFLAGS) $(LIBS)
 
 .cpp.o:
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
 
-clean:
-	$(RM) *.o *~ $(EXECUTABLE)
+depend $(DEPFILE):
+	@echo Makefile - create dependencies for: $(SOURCES)
+	@$(RM) $(DEPFILE)
+	@$(CXX) -E -MM $(CXXFLAGS) $(INCLUDES) $(SOURCES) >> $(DEPFILE)
 
-depend: $(SOURCES)
-	makedepend $(INCLUDES) $^
+ifneq ($(MAKECMDGOALS), clean)
+-include $(DEPFILE)
+endif
 
-# DO NOT DELETE THIS LINE -- make depend needs it
+clean: 
+	$(RM) -f $(TARGET) $(DEPFILE) $(OBJS)

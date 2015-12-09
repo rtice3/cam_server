@@ -33,7 +33,9 @@ Json::Value orchid::camera_list::get_full_tree() {
     return root;
 }
 
-bool orchid::camera_list::set_camera_attribute(int index, Json::Value val) {
+bool orchid::camera_list::set_camera_attribute(Json::Value val) {
+    int index = std::stoi(val.get("index", "0").asString());
+    val = val.removeMember("index");
     return d_cam_ring[index]->set_camera_config(val);
 }
 
@@ -360,8 +362,8 @@ std::string orchid::app::get_tree() {
     return writer.write(d_cam_list.get_full_tree());
 }
 
-bool orchid::app::set_value(int index, Json::Value val) {
-    return d_cam_list.set_camera_attribute(index, val);
+bool orchid::app::set_value(Json::Value val) {
+    return d_cam_list.set_camera_attribute(val);
 }
 
 void orchid::app::ctx_error(GPContext *context, const char *str, void *data) {

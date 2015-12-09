@@ -5,6 +5,8 @@
 #include <gphoto2/gphoto2-camera.h>
 #include <json/json.h>
 
+#include "cam_exception.h"
+
 namespace orchid {
 
 	class camera {
@@ -33,7 +35,7 @@ namespace orchid {
 		bool refresh_list(GPContext*);
 		Json::Value get_camera_tree(int);
 		Json::Value get_full_tree();
-		bool set_camera_attribute(int, Json::Value);
+		bool set_camera_attribute(Json::Value);
 	private:
 		CameraList* d_list;
 		std::vector<std::unique_ptr<orchid::camera>> d_cam_ring;
@@ -56,7 +58,7 @@ namespace orchid {
 
 		bool init();
 		std::string get_tree();
-		bool set_value(int, Json::Value);
+		bool set_value(Json::Value);
 	private:
 		GPContext* d_ctx;
 		orchid::camera_list d_cam_list;

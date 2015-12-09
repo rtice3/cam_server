@@ -42,7 +42,7 @@
 
 <div id="content_panel">
 	<uib-tabset>
-		<uib-tab ng-repeat="t in ctrl.data.cameras" heading="{{t.name}}">
+		<uib-tab ng-repeat="t in ctrl.data.cameras" heading="{{t.name}}" select="changeTab($index)">
       		<div ng-repeat="z in t.zchildren" ng-include="'json_recursion.html'">
       		</div>
     	</uib-tab>

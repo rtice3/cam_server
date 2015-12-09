@@ -35,19 +35,28 @@
     var store = this;
     store.data = [];
 
+    var tab = 0;
+
 //    $http.get("json/test.json").success(function(response) {
 //      store.data = response;
 //    });
 
-    $http.post("fcgi/cam_server.fcgi", "refresh").success(function(response) {
+    $http.get("refresh.live").success(function(response) {
       store.data = response;
     });
 
+    $scope.changeTab = function(newTab) {
+      tab = newTab;
+    };
+
     $scope.valChange = function(name, value) {
-      console.log({
+      var jsn = {
+        "index": tab,
         "name": name,
         "value": value
-      });
+      };
+      console.log(jsn);
+      $http.post("/val", jsn);
     };
   }]);
 })();
