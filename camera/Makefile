@@ -1,11 +1,15 @@
+CC				:= gcc
 CXX 			:= g++
-CXXFLAGS 		:= --std=c++14 -Wall -O0 -g
+CFLAGS			:= -Wall -O0 -g
+CXXFLAGS 		:= --std=c++14 $(CFLAGS) -DDEBUG
 INCLUDES 		:= -I../jsoncpp/dist/ -I../mongoose -I/usr/local/include
 LFLAGS 			:= 
 LIBS 			:= -lgphoto2 -lgphoto2_port
 
-SOURCES			:= $(wildcard *.cpp) ../mongoose/mongoose.c ../jsoncpp/dist/jsoncpp.cpp
-OBJS 			:= $(SOURCES:.cpp=.o)
+CSOURCES		:= ../mongoose/mongoose.c
+CPPSOURCES		:= $(wildcard *.cpp) ../jsoncpp/dist/jsoncpp.cpp
+OBJS			:= $(CSOURCES:%.c=%.o) $(CPPSOURCES:%.cpp=%.o)
+
 DEPFILE			:= Makefile.dep
 
 TARGET 			:= camera.bin
@@ -19,13 +23,17 @@ all: $(TARGET)
 $(TARGET): $(OBJS)
 	$(CXX) $(CXXFLAGS) -o $(TARGET) $(OBJS) $(LFLAGS) $(LIBS)
 
-.cpp.o:
+%.o: %.c
+	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
+
+%.o: %.cpp
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
 
 depend $(DEPFILE):
-	@echo Makefile - create dependencies for: $(SOURCES)
+	@echo Makefile - create dependencies for: $(CSOURCES) $(CPPSOURCES)
 	@$(RM) $(DEPFILE)
-	@$(CXX) -E -MM $(CXXFLAGS) $(INCLUDES) $(SOURCES) >> $(DEPFILE)
+	@$(CC) -E -MM $(CFLAGS) $(INCLUDES) $(CSOURCES) >> $(DEPFILE)
+	@$(CXX) -E -MM $(CXXFLAGS) $(INCLUDES) $(CPPSOURCES) >> $(DEPFILE)
 
 ifneq ($(MAKECMDGOALS), clean)
 -include $(DEPFILE)

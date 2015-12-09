@@ -1,3 +1,5 @@
+#include <iostream>
+
 #include "camera.h"
 #include "mongoose.h"
 
@@ -10,9 +12,11 @@ static void ev_handler(struct mg_connection* nc, int ev, void* ev_data) {
 
    switch(ev) {
       case MG_EV_HTTP_REQUEST: {
+
          if(mg_vcmp(&hm->method, "POST") == 0) {
             if(mg_vcmp(&hm->uri, "/val") == 0) {
                std::string ret;
+       //        std::cout << std::string(hm->body.p, hm->body.len) << std::endl;
                if(app.set_value(std::string(hm->body.p, hm->body.len)))
                   ret = "true";
                else
@@ -25,7 +29,8 @@ static void ev_handler(struct mg_connection* nc, int ev, void* ev_data) {
                break;
          }
          else {
-            if(mg_vcmp(&hm->uri, "refresh.live") == 0) {
+            if(mg_vcmp(&hm->uri, "/refresh.live") == 0) {
+            	app.init();
                auto ret = app.get_tree();
                mg_printf(nc, "HTTP/1.1 200 OK\r\nContent-Length: %d\r\n"
                    "Content-Type: application/json\r\n\r\n%s",
@@ -48,8 +53,6 @@ int main(int argc, char** argv) {
    struct mg_connection* nc;
 
 	try {
-		app.init();
-
       mg_mgr_init(&mgr, NULL);
       nc = mg_bind(&mgr, s_http_port, ev_handler);
 

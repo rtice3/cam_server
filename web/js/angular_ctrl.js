@@ -56,7 +56,7 @@
         "value": value
       };
       console.log(jsn);
-      $http.post("/val", jsn);
+      $http.post("val", jsn);
     };
   }]);
 })();

@@ -27,16 +27,19 @@ Json::Value orchid::camera_list::get_camera_tree(int index) {
 }
 
 Json::Value orchid::camera_list::get_full_tree() {
-    Json::Value root;
+    Json::Value root, array;
     for(auto i = 0u; i < d_cam_ring.size(); i++)
-        root[i] = this->get_camera_tree(i);
+        array[i] = this->get_camera_tree(i);
+    root["cameras"] = array;
     return root;
 }
 
 bool orchid::camera_list::set_camera_attribute(Json::Value val) {
-    int index = std::stoi(val.get("index", "0").asString());
-    val = val.removeMember("index");
-    return d_cam_ring[index]->set_camera_config(val);
+    std::cout << val << std::endl;
+    Json::Value root;
+    root["name"] = val["name"];
+    root["value"] = val["value"];
+    return d_cam_ring[val["index"].asInt()]->set_camera_config(val);
 }
 
 int orchid::camera_list::size() { return gp_list_count(d_list); }
@@ -291,7 +294,7 @@ Json::Value orchid::camera::get_child(CameraWidget* parent, int num_children) {
         }
         int sub_children = gp_widget_count_children(child);
         if(sub_children > 0)
-            root[i]["zchildren"].append(this->get_child(child, sub_children));
+            root[i]["zchildren"] = this->get_child(child, sub_children);
     }
     return root;
 }
