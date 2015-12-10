@@ -50,13 +50,14 @@
     };
 
     $scope.valChange = function(name, value) {
-      var jsn = {
-        "index": tab,
-        "name": name,
-        "value": value
-      };
+      var jsn = {};
+      jsn['index'] = tab;
+      jsn['key'] = name;
+      jsn['value'] = value;
       console.log(jsn);
-      $http.post("val", jsn);
+      $http.post("val", angular.toJson(jsn)).success(function(response) {
+        console.log(response);
+      });
     };
   }]);
 })();

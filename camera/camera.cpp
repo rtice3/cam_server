@@ -34,10 +34,9 @@ Json::Value orchid::camera_list::get_full_tree() {
     return root;
 }
 
-bool orchid::camera_list::set_camera_attribute(Json::Value val) {
-    std::cout << val << std::endl;
+bool orchid::camera_list::set_camera_attribute(Json::Value& val) {
     Json::Value root;
-    root["name"] = val["name"];
+    root["key"] = val["key"];
     root["value"] = val["value"];
     return d_cam_ring[val["index"].asInt()]->set_camera_config(val);
 }
@@ -67,7 +66,7 @@ std::vector<std::string> orchid::camera_list::get_name_list() {
     return ret;
 }
 
-std::unique_ptr<orchid::camera> orchid::camera_list::create_camera(int index, GPContext* ctx) {
+orchid::unique_cam orchid::camera_list::create_camera(int index, GPContext* ctx) {
     const char* model;
     const char* port;
     int ret, m, p;
@@ -119,7 +118,7 @@ std::unique_ptr<orchid::camera> orchid::camera_list::create_camera(int index, GP
     return std::make_unique<orchid::camera>(cam, ctx);
 }
 
-std::unique_ptr<orchid::camera> orchid::camera_list::create_camera(std::string name, GPContext* ctx) {
+orchid::unique_cam orchid::camera_list::create_camera(std::string name, GPContext* ctx) {
     int ret, index;
     auto cname = name.c_str();
     if((ret = gp_list_find_by_name(d_list, &index, cname)) == GP_OK)
@@ -127,7 +126,7 @@ std::unique_ptr<orchid::camera> orchid::camera_list::create_camera(std::string n
     return nullptr;
 }
 
-std::unique_ptr<orchid::camera> orchid::camera_list::handle_error(int error, const char* file, int line) {
+orchid::unique_cam orchid::camera_list::handle_error(int error, const char* file, int line) {
     printf("%s:%d ERROR# %d: %s", file, line, error, gp_result_as_string(error));
     return nullptr;
 }
@@ -157,11 +156,11 @@ std::string orchid::camera::get_driver_summary() {
     return std::string(text.text);
 }
 
-bool orchid::camera::set_camera_config(Json::Value root) {
+bool orchid::camera::set_camera_config(Json::Value& root) {
     CameraWidget* child = nullptr;
     CameraWidgetType* type = nullptr;
 
-    if(gp_widget_get_child_by_name(d_widget, root["name"].asCString(), &child) < GP_OK)
+    if(gp_widget_get_child_by_name(d_widget, root["key"].asCString(), &child) < GP_OK)
         return false;
 
     if(gp_widget_get_type(child, type) < GP_OK)
@@ -365,7 +364,7 @@ std::string orchid::app::get_tree() {
     return writer.write(d_cam_list.get_full_tree());
 }
 
-bool orchid::app::set_value(Json::Value val) {
+bool orchid::app::set_value(Json::Value& val) {
     return d_cam_list.set_camera_attribute(val);
 }
 

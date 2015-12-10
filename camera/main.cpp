@@ -15,9 +15,13 @@ static void ev_handler(struct mg_connection* nc, int ev, void* ev_data) {
 
          if(mg_vcmp(&hm->method, "POST") == 0) {
             if(mg_vcmp(&hm->uri, "/val") == 0) {
+            	Json::Reader reader;
+            	Json::Value root;
                std::string ret;
-       //        std::cout << std::string(hm->body.p, hm->body.len) << std::endl;
-               if(app.set_value(std::string(hm->body.p, hm->body.len)))
+ //              std::cout << std::string(hm->body.p, hm->body.len) << std::endl;
+               reader.parse(std::string(hm->body.p, hm->body.len), root);
+
+               if(app.set_value(root))
                   ret = "true";
                else
                   ret = "false";

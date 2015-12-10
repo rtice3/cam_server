@@ -15,7 +15,7 @@ namespace orchid {
 		~camera();
 
 		Json::Value get_camera_config();
-		bool set_camera_config(Json::Value);
+		bool set_camera_config(Json::Value&);
 	private:
 		Camera* d_cam;
 		CameraWidget* d_widget;
@@ -27,6 +27,9 @@ namespace orchid {
 		Json::Value get_list_data(CameraWidget*);
 	};
 
+	using unique_cam = std::unique_ptr<orchid::camera>;
+	using camera_ring = std::vector<unique_cam>;
+
 	class camera_list {
 	public:
 		camera_list();
@@ -35,21 +38,19 @@ namespace orchid {
 		bool refresh_list(GPContext*);
 		Json::Value get_camera_tree(int);
 		Json::Value get_full_tree();
-		bool set_camera_attribute(Json::Value);
+		bool set_camera_attribute(Json::Value&);
 	private:
 		CameraList* d_list;
-		std::vector<std::unique_ptr<orchid::camera>> d_cam_ring;
+		camera_ring d_cam_ring;
 
 		int size();
 		std::vector<std::string> get_name_list();
 		bool create_cameras(GPContext*);
-		std::unique_ptr<orchid::camera> create_camera(int, GPContext*);
-		std::unique_ptr<orchid::camera> create_camera(std::string, GPContext*);
+		unique_cam create_camera(int, GPContext*);
+		unique_cam create_camera(std::string, GPContext*);
 
-		static std::unique_ptr<orchid::camera> handle_error(int, const char*, int);
+		static unique_cam handle_error(int, const char*, int);
 	};
-
-	using camera_ring = std::vector<std::unique_ptr<orchid::camera>>;
 
 	class app {
 	public:
@@ -58,7 +59,7 @@ namespace orchid {
 
 		bool init();
 		std::string get_tree();
-		bool set_value(Json::Value);
+		bool set_value(Json::Value&);
 	private:
 		GPContext* d_ctx;
 		orchid::camera_list d_cam_list;
