@@ -35,9 +35,6 @@ Json::Value orchid::camera_list::get_full_tree() {
 }
 
 bool orchid::camera_list::set_camera_attribute(Json::Value& val) {
-    Json::Value root;
-    root["key"] = val["key"];
-    root["value"] = val["value"];
     return d_cam_ring[val["index"].asInt()]->set_camera_config(val);
 }
 
@@ -158,41 +155,45 @@ std::string orchid::camera::get_driver_summary() {
 
 bool orchid::camera::set_camera_config(Json::Value& root) {
     CameraWidget* child = nullptr;
-    CameraWidgetType* type = nullptr;
+    CameraWidgetType type;
+
+    std::cout << root << std::endl;
 
     if(gp_widget_get_child_by_name(d_widget, root["key"].asCString(), &child) < GP_OK)
         return false;
 
-    if(gp_widget_get_type(child, type) < GP_OK)
+    if(gp_widget_get_type(child, &type) < GP_OK)
         return false;
 
-    switch(*type) {
+    switch(type) {
         case GP_WIDGET_MENU:
         case GP_WIDGET_RADIO:
         case GP_WIDGET_TEXT: {
             auto temp = root["value"].asCString();
-            if(gp_widget_set_value(child, &temp) < GP_OK)
+            if(gp_widget_set_value(child, temp) < GP_OK)
                 return false;
-            return true;
+            break;
         }
         case GP_WIDGET_RANGE: {
             auto temp = root["value"].asFloat();
             if(gp_widget_set_value(child, &temp) < GP_OK)
                 return false;
-            return true;
+            break;
         }
         case GP_WIDGET_DATE:
         case GP_WIDGET_TOGGLE: {
             auto temp = root["value"].asInt();
             if(gp_widget_set_value(child, &temp) < GP_OK)
                 return false;
-            return true;
+            break;
         }
         default: {
             return false;
         }
     }
-    return false;
+    if(gp_camera_set_config(d_cam, d_widget, d_ctx) < GP_OK)
+        return false;
+    return true;
 }
 
 Json::Value orchid::camera::get_child(CameraWidget* parent, int num_children) {
