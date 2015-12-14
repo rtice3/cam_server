@@ -54,8 +54,18 @@
       jsn['index'] = tab;
       jsn['key'] = name;
       jsn['value'] = value;
-      console.log(jsn);
+//      console.log(jsn);
       $http.post("val", angular.toJson(jsn)).success(function(response) {
+        console.log(response);
+      });
+    };
+
+    $scope.capture = function(filename) {
+      var jsn = {};
+      jsn['index'] = tab;
+      jsn['filename'] = filename;
+ //     console.log(jsn);
+      $http.post("capture", angular.toJson(jsn)).success(function(response) {
         console.log(response);
       });
     };

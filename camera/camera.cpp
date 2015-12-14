@@ -1,5 +1,6 @@
 #include <cstdio>
 #include <iostream>
+#include <unistd.h>
 
 #include "camera.h"
 
@@ -36,6 +37,10 @@ Json::Value orchid::camera_list::get_full_tree() {
 
 bool orchid::camera_list::set_camera_attribute(Json::Value& val) {
     return d_cam_ring[val["index"].asInt()]->set_camera_config(val);
+}
+
+bool orchid::camera_list::capture(int index, std::string& fn) {
+    return d_cam_ring[index]->capture(fn);
 }
 
 int orchid::camera_list::size() { return gp_list_count(d_list); }
@@ -157,7 +162,7 @@ bool orchid::camera::set_camera_config(Json::Value& root) {
     CameraWidget* child = nullptr;
     CameraWidgetType type;
 
-    std::cout << root << std::endl;
+//    std::cout << root << std::endl;
 
     if(gp_widget_get_child_by_name(d_widget, root["key"].asCString(), &child) < GP_OK)
         return false;
@@ -193,6 +198,29 @@ bool orchid::camera::set_camera_config(Json::Value& root) {
     }
     if(gp_camera_set_config(d_cam, d_widget, d_ctx) < GP_OK)
         return false;
+    return true;
+}
+
+#define WAITTIME        100
+
+bool orchid::camera::capture(std::string& fn) {
+    int fd;
+    CameraFile* file;
+    CameraFilePath path;
+
+    if(gp_camera_capture(d_cam, GP_CAPTURE_IMAGE, &path, d_ctx) < GP_OK)
+        return false;
+
+    fd = ::open(fn.c_str(), O_CREAT | O_WRONLY, 0644);
+    if(gp_file_new_from_fd(&file, fd) < GP_OK)
+        return false;
+    if(gp_camera_file_get(d_cam, path.folder, path.name, GP_FILE_TYPE_NORMAL, file, d_ctx) < GP_OK)
+        return false;
+    if(gp_camera_file_delete(d_cam, path.folder, path.name, d_ctx) < GP_OK)
+        return false;
+
+    gp_file_free(file);
+
     return true;
 }
 
@@ -367,6 +395,12 @@ std::string orchid::app::get_tree() {
 
 bool orchid::app::set_value(Json::Value& val) {
     return d_cam_list.set_camera_attribute(val);
+}
+
+bool orchid::app::capture(Json::Value& val) {
+    auto index = val["index"].asInt();
+    auto fn = val["filename"].asString();
+    return d_cam_list.capture(index, fn);
 }
 
 void orchid::app::ctx_error(GPContext *context, const char *str, void *data) {

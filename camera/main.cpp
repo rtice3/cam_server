@@ -18,10 +18,23 @@ static void ev_handler(struct mg_connection* nc, int ev, void* ev_data) {
             	Json::Reader reader;
             	Json::Value root;
                std::string ret;
- //              std::cout << std::string(hm->body.p, hm->body.len) << std::endl;
                reader.parse(std::string(hm->body.p, hm->body.len), root);
 
                if(app.set_value(root))
+                  ret = "true";
+               else
+                  ret = "false";
+               mg_printf(nc, "HTTP/1.1 200 OK\r\nContent-Length: %d\r\n"
+                   "Content-Type: text/plain\r\n\r\n%s",
+                   ret.size(), ret.c_str());
+            }
+            else if(mg_vcmp(&hm->uri, "/capture") == 0) {
+               Json::Reader reader;
+               Json::Value root;
+               std::string ret;
+               reader.parse(std::string(hm->body.p, hm->body.len), root);
+
+               if(app.capture(root))
                   ret = "true";
                else
                   ret = "false";
