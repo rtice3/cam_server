@@ -1,5 +1,8 @@
 #include <cstdio>
 #include <iostream>
+
+#include <fcntl.h>
+#include <sys/stat.h>
 #include <unistd.h>
 
 #include "camera.h"
@@ -208,10 +211,17 @@ bool orchid::camera::capture(std::string& fn) {
     CameraFile* file;
     CameraFilePath path;
 
+    std::string full_fn = fn + ".jpg";
+
+    strcpy(path.folder, "/");
+    strcpy(path.name, "foo.jpg");
+
     if(gp_camera_capture(d_cam, GP_CAPTURE_IMAGE, &path, d_ctx) < GP_OK)
         return false;
 
-    fd = ::open(fn.c_str(), O_CREAT | O_WRONLY, 0644);
+    fd = ::open(full_fn.c_str(), O_CREAT | O_WRONLY, 0644);
+    if(fd <= 0)
+        return false;
     if(gp_file_new_from_fd(&file, fd) < GP_OK)
         return false;
     if(gp_camera_file_get(d_cam, path.folder, path.name, GP_FILE_TYPE_NORMAL, file, d_ctx) < GP_OK)
@@ -220,6 +230,7 @@ bool orchid::camera::capture(std::string& fn) {
         return false;
 
     gp_file_free(file);
+    ::close(fd);
 
     return true;
 }

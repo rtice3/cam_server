@@ -36,6 +36,7 @@
     store.data = [];
 
     var tab = 0;
+    var serial = "";
 
 //    $http.get("json/test.json").success(function(response) {
 //      store.data = response;
@@ -60,10 +61,10 @@
       });
     };
 
-    $scope.capture = function(filename) {
+    $scope.capture = function() {
       var jsn = {};
       jsn['index'] = tab;
-      jsn['filename'] = filename;
+      jsn['filename'] = serial;
  //     console.log(jsn);
       $http.post("capture", angular.toJson(jsn)).success(function(response) {
         console.log(response);

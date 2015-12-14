@@ -43,6 +43,16 @@
 <div id="content_panel">
 	<uib-tabset>
 		<uib-tab ng-repeat="t in ctrl.data.cameras" heading="{{t.name}}" select="changeTab($index)">
+			<uib-accordion>
+			    <uib-accordion-group heading="Capture">
+				    <label>Serial:
+					    <input type="text" name="input" ng-model="serial">
+					</label>
+					<button type="button" class="btn btn-primary" ng-click='capture()'>
+		        		Capture
+		    		</button>
+			    </uib-accordion-group>
+			</uib-accordion>
       		<div ng-repeat="z in t.zchildren" ng-include="'json_recursion.html'">
       		</div>
     	</uib-tab>
