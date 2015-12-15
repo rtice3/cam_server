@@ -31,16 +31,20 @@ static void ev_handler(struct mg_connection* nc, int ev, void* ev_data) {
             else if(mg_vcmp(&hm->uri, "/capture") == 0) {
                Json::Reader reader;
                Json::Value root;
-               std::string ret;
                reader.parse(std::string(hm->body.p, hm->body.len), root);
 
-               if(app.capture(root))
-                  ret = "true";
-               else
-                  ret = "false";
+               auto ret = app.capture(root);
                mg_printf(nc, "HTTP/1.1 200 OK\r\nContent-Length: %d\r\n"
                    "Content-Type: text/plain\r\n\r\n%s",
                    ret.size(), ret.c_str());
+            }
+            else if(mg_vcmp(&hm->uri, "/save_img") == 0) {
+               auto img = std::string(hm->body.p, hm->body.len);
+               // TODO: ftp img to process server
+            }
+            else if(mg_vcmp(&hm->uri, "/reject_img") == 0) {
+               auto img = std::string(hm->body.p, hm->body.len);
+               // TODO: delete img
             }
             else
                break;

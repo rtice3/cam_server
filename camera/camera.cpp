@@ -42,8 +42,8 @@ bool orchid::camera_list::set_camera_attribute(Json::Value& val) {
     return d_cam_ring[val["index"].asInt()]->set_camera_config(val);
 }
 
-bool orchid::camera_list::capture(int index, std::string& fn) {
-    return d_cam_ring[index]->capture(fn);
+std::string orchid::camera_list::capture(int index, std::string& fn) {
+    return std::move(d_cam_ring[index]->capture(fn));
 }
 
 int orchid::camera_list::size() { return gp_list_count(d_list); }
@@ -206,33 +206,31 @@ bool orchid::camera::set_camera_config(Json::Value& root) {
 
 #define WAITTIME        100
 
-bool orchid::camera::capture(std::string& fn) {
-    int fd;
+std::string orchid::camera::capture(std::string& fn) {
     CameraFile* file;
     CameraFilePath path;
 
     std::string full_fn = fn + ".jpg";
+    std::string full_path = "../web/" + full_fn;
 
     strcpy(path.folder, "/");
-    strcpy(path.name, "foo.jpg");
+    strcpy(path.name, full_fn.c_str());
 
     if(gp_camera_capture(d_cam, GP_CAPTURE_IMAGE, &path, d_ctx) < GP_OK)
-        return false;
+        return "";
 
-    fd = ::open(full_fn.c_str(), O_CREAT | O_WRONLY, 0644);
-    if(fd <= 0)
-        return false;
-    if(gp_file_new_from_fd(&file, fd) < GP_OK)
-        return false;
+    if(gp_file_new(&file) < GP_OK)
+        return "";
     if(gp_camera_file_get(d_cam, path.folder, path.name, GP_FILE_TYPE_NORMAL, file, d_ctx) < GP_OK)
-        return false;
+        return "";
+    if(gp_file_save(file, full_path.c_str()) < GP_OK)
+        return "";
     if(gp_camera_file_delete(d_cam, path.folder, path.name, d_ctx) < GP_OK)
-        return false;
+        return "";
 
     gp_file_free(file);
-    ::close(fd);
 
-    return true;
+    return std::move(full_fn);
 }
 
 Json::Value orchid::camera::get_child(CameraWidget* parent, int num_children) {
@@ -408,10 +406,10 @@ bool orchid::app::set_value(Json::Value& val) {
     return d_cam_list.set_camera_attribute(val);
 }
 
-bool orchid::app::capture(Json::Value& val) {
+std::string orchid::app::capture(Json::Value& val) {
     auto index = val["index"].asInt();
     auto fn = val["filename"].asString();
-    return d_cam_list.capture(index, fn);
+    return std::move(d_cam_list.capture(index, fn));
 }
 
 void orchid::app::ctx_error(GPContext *context, const char *str, void *data) {

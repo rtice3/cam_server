@@ -16,7 +16,7 @@ namespace orchid {
 
 		Json::Value get_camera_config();
 		bool set_camera_config(Json::Value&);
-		bool capture(std::string&);
+		std::string capture(std::string&);
 	private:
 		Camera* d_cam;
 		CameraWidget* d_widget;
@@ -40,7 +40,7 @@ namespace orchid {
 		Json::Value get_camera_tree(int);
 		Json::Value get_full_tree();
 		bool set_camera_attribute(Json::Value&);
-		bool capture(int, std::string&);
+		std::string capture(int, std::string&);
 	private:
 		CameraList* d_list;
 		camera_ring d_cam_ring;
@@ -62,7 +62,7 @@ namespace orchid {
 		bool init();
 		std::string get_tree();
 		bool set_value(Json::Value&);
-		bool capture(Json::Value&);
+		std::string capture(Json::Value&);
 	private:
 		GPContext* d_ctx;
 		orchid::camera_list d_cam_list;
