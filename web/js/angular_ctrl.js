@@ -43,7 +43,7 @@
     };
   });
 
-  app.controller('camera_ctrl', [ '$http', '$scope', '$uibModal', function ($http, $scope, $uibModal) {
+  app.controller('camera_ctrl', [ '$http', '$scope', '$uibModal', '$window', function ($http, $scope, $uibModal, $window) {
     var store = this;
     store.data = [];
 
@@ -68,7 +68,8 @@
       jsn['key'] = name;
       jsn['value'] = value;
       $http.post("val", angular.toJson(jsn)).success(function (response) {
-        console.log(response);
+        if(response != "")
+          $window.alert(response);
       });
     };
 
@@ -77,9 +78,15 @@
       jsn['index'] = tab;
       jsn['filename'] = $scope.serial.value;
       $http.post("capture", angular.toJson(jsn)).success(function (response) {
-        $scope.serial.img = response;
-        console.log($scope.serial);
-        $scope.open();
+        var rgx = /.*\.jpg/;
+        if(rgx.test(response)) {
+          $scope.serial.img = response;
+          console.log($scope.serial);
+          $scope.open();
+        }
+        else {
+          $window.alert(response);
+        }
       });
     };
 
@@ -98,11 +105,13 @@
 
       modalInstance.result.then(function (img) {
         $http.post("save_img", img).success(function (response) {
-          console.log(response);
+          if(response != "")
+            $window.alert(response);
         });
       }, function() {
         $http.post("reject_img", $scope.serial.img).success(function (response) {
-          console.log(response);
+          if(response != "")
+            $window.alert(response);
         });
       });
     };

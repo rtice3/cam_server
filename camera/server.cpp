@@ -43,12 +43,9 @@ void orchid::server::handler(struct mg_connection* nc, int ev, struct http_messa
 			if(mg_vcmp(&hm->method, "POST") == 0) {
 				if(mg_vcmp(&hm->uri, "/val") == 0) {
 					orchid::http post(std::string(hm->body.p, hm->body.len), [&](Json::Value& root) {
-						std::string ret;
+						std::string ret = "";
 						try {
-							if(d_app.set_value(root))
-								ret = "true";
-							else
-								ret = "false";
+							d_app.set_value(root);
 						}
 						catch(cam_exception& e) {
 							ret = std::string(e.what());
@@ -85,10 +82,12 @@ void orchid::server::handler(struct mg_connection* nc, int ev, struct http_messa
 					orchid::server::xmit_txt(nc, ret);	
 				}
 				else if(mg_vcmp(&hm->uri, "/reject_img") == 0) {
+					std::string ret = "";
 					auto img = std::string(hm->body.p, hm->body.len);
 					std::cout << "Deleting: " << img << std::endl;
 					if(::remove(img.c_str()))
-						std::cout << "Failed: " << errno << std::endl;
+						ret = "Failed: " + std::to_string(errno);
+					orchid::server::xmit_txt(nc, ret);
 				}
 				else
 					break;
@@ -119,7 +118,7 @@ void orchid::server::handler(struct mg_connection* nc, int ev, struct http_messa
 	}
 }
 
-void xmit_txt(struct mg_connection* nc, std::string msg) {
+void orchid::server::xmit_txt(struct mg_connection* nc, std::string msg) {
 	mg_printf(nc, "HTTP/1.1 200 OK\r\nContent-Length: %d\r\n"
 		"Content-Type: text/plain\r\n\r\n%s",
 		msg.size(), msg.c_str());
@@ -159,5 +158,5 @@ std::string orchid::ftp::operator()(void) {
 
 	req.perform();
 
-	return "Success";
+	return "";
 }
