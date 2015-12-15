@@ -40,10 +40,12 @@ static void ev_handler(struct mg_connection* nc, int ev, void* ev_data) {
             }
             else if(mg_vcmp(&hm->uri, "/save_img") == 0) {
                auto img = std::string(hm->body.p, hm->body.len);
+               std::cout << "Save: " << img << std::endl;
                // TODO: ftp img to process server
             }
             else if(mg_vcmp(&hm->uri, "/reject_img") == 0) {
                auto img = std::string(hm->body.p, hm->body.len);
+               std::cout << "Delete: " << img << std::endl;
                // TODO: delete img
             }
             else
