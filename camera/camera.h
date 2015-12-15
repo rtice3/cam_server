@@ -1,3 +1,6 @@
+#ifndef __CAMERA_H__
+#define __CAMERA_H__
+
 #include <memory>
 #include <string>
 #include <vector>
@@ -15,7 +18,7 @@ namespace orchid {
 		~camera();
 
 		Json::Value get_camera_config();
-		bool set_camera_config(Json::Value&);
+		void set_camera_config(Json::Value&);
 		std::string capture(std::string&);
 	private:
 		Camera* d_cam;
@@ -36,10 +39,10 @@ namespace orchid {
 		camera_list();
 		~camera_list();
 
-		bool refresh_list(GPContext*);
+		void refresh_list(GPContext*);
 		Json::Value get_camera_tree(int);
 		Json::Value get_full_tree();
-		bool set_camera_attribute(Json::Value&);
+		void set_camera_attribute(Json::Value&);
 		std::string capture(int, std::string&);
 	private:
 		CameraList* d_list;
@@ -47,11 +50,9 @@ namespace orchid {
 
 		int size();
 		std::vector<std::string> get_name_list();
-		bool create_cameras(GPContext*);
+		void create_cameras(GPContext*);
 		unique_cam create_camera(int, GPContext*);
 		unique_cam create_camera(std::string, GPContext*);
-
-		static unique_cam handle_error(int, const char*, int);
 	};
 
 	class app {
@@ -59,9 +60,9 @@ namespace orchid {
 		app();
 		~app();
 
-		bool init();
+		void init();
 		std::string get_tree();
-		bool set_value(Json::Value&);
+		void set_value(Json::Value&);
 		std::string capture(Json::Value&);
 	private:
 		GPContext* d_ctx;
@@ -71,3 +72,5 @@ namespace orchid {
 		static void ctx_status(GPContext*, const char*, void*);
 	};
 };
+
+#endif

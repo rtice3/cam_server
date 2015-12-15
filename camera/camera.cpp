@@ -8,134 +8,6 @@
 #include "camera.h"
 
 
-orchid::camera_list::camera_list() { gp_list_new(&d_list); }
-
-orchid::camera_list::~camera_list() { gp_list_free(d_list); }
-
-bool orchid::camera_list::refresh_list(GPContext* ctx) {
-    d_cam_ring.erase(d_cam_ring.begin(), d_cam_ring.end());
-
-    if(gp_list_reset(d_list) < GP_OK)
-        return false;
-    if(gp_camera_autodetect(d_list, ctx) < GP_OK)
-        return false;
-
-    d_cam_ring.reserve(this->size());
-    if(create_cameras(ctx))
-        return true;
-    return false;
-}
-
-Json::Value orchid::camera_list::get_camera_tree(int index) {
-    return d_cam_ring[index]->get_camera_config();
-}
-
-Json::Value orchid::camera_list::get_full_tree() {
-    Json::Value root, array;
-    for(auto i = 0u; i < d_cam_ring.size(); i++)
-        array[i] = this->get_camera_tree(i);
-    root["cameras"] = array;
-    return root;
-}
-
-bool orchid::camera_list::set_camera_attribute(Json::Value& val) {
-    return d_cam_ring[val["index"].asInt()]->set_camera_config(val);
-}
-
-std::string orchid::camera_list::capture(int index, std::string& fn) {
-    return std::move(d_cam_ring[index]->capture(fn));
-}
-
-int orchid::camera_list::size() { return gp_list_count(d_list); }
-
-bool orchid::camera_list::create_cameras(GPContext* ctx) {
-    for(int i = 0; i < this->size(); i++) {
-        std::unique_ptr<orchid::camera> temp = std::move(create_camera(i, ctx));
-        if(!temp)
-            return false;
-        else
-            d_cam_ring.push_back(std::move(temp));
-    }
-    return true;
-}
-
-std::vector<std::string> orchid::camera_list::get_name_list() {
-    std::vector<std::string> ret;
-    ret.reserve(this->size());
-
-    for(auto i = 0; i < this->size(); i++) {
-        const char* name;
-        gp_list_get_name(d_list, i, &name);
-        ret.push_back(std::string(name));
-    }
-    return ret;
-}
-
-orchid::unique_cam orchid::camera_list::create_camera(int index, GPContext* ctx) {
-    const char* model;
-    const char* port;
-    int ret, m, p;
-    CameraAbilities a;
-    GPPortInfo pi;
-    Camera* cam;
-    CameraAbilitiesList* abilities_list;
-    GPPortInfoList* pi_list;
-
-    gp_list_get_name(d_list, index, &model);
-    gp_list_get_value(d_list, index, &port);
-//    std::cout << "name: " << model << " port: " << port << std::endl;
-
-    if((ret = gp_camera_new(&cam)) < GP_OK)
-        return orchid::camera_list::handle_error(ret, __FILE__, __LINE__);
-
-    if((ret = gp_abilities_list_new(&abilities_list)) < GP_OK)
-        return orchid::camera_list::handle_error(ret, __FILE__, __LINE__);
-    if((ret = gp_abilities_list_load(abilities_list, ctx)) < GP_OK)
-        return orchid::camera_list::handle_error(ret, __FILE__, __LINE__);
-    
-
-    if((m = gp_abilities_list_lookup_model(abilities_list, model)) < GP_OK)
-        return orchid::camera_list::handle_error(m, __FILE__, __LINE__);
-    if((ret = gp_abilities_list_get_abilities(abilities_list, m, &a)) < GP_OK)
-        return orchid::camera_list::handle_error(ret, __FILE__, __LINE__);
-    if((ret = gp_camera_set_abilities(cam, a)) < GP_OK)
-        return orchid::camera_list::handle_error(ret, __FILE__, __LINE__);
-
-    if((ret = gp_port_info_list_new(&pi_list)) < GP_OK)
-        return orchid::camera_list::handle_error(ret, __FILE__, __LINE__);
-    if((ret = gp_port_info_list_load(pi_list)) < GP_OK)
-        return orchid::camera_list::handle_error(ret, __FILE__, __LINE__);
-    if((gp_port_info_list_count(pi_list)) < GP_OK)
-        return orchid::camera_list::handle_error(ret, __FILE__, __LINE__);
-
-    if((p = gp_port_info_list_lookup_path(pi_list, port)) == GP_ERROR_UNKNOWN_PORT) {
-        fprintf(stderr, "The port you specified ('%s') cannot be found.\n", port);
-        return orchid::camera_list::handle_error(p, __FILE__, __LINE__);
-    }
-    else if(p < GP_OK)
-        return orchid::camera_list::handle_error(p, __FILE__, __LINE__);
-
-    if((ret = gp_port_info_list_get_info(pi_list, p, &pi)) < GP_OK)
-        return orchid::camera_list::handle_error(ret, __FILE__, __LINE__);
-    if((ret = gp_camera_set_port_info(cam, pi)) < GP_OK)
-        return orchid::camera_list::handle_error(ret, __FILE__, __LINE__);
-
-    return std::make_unique<orchid::camera>(cam, ctx);
-}
-
-orchid::unique_cam orchid::camera_list::create_camera(std::string name, GPContext* ctx) {
-    int ret, index;
-    auto cname = name.c_str();
-    if((ret = gp_list_find_by_name(d_list, &index, cname)) == GP_OK)
-        return this->create_camera(index, ctx);
-    return nullptr;
-}
-
-orchid::unique_cam orchid::camera_list::handle_error(int error, const char* file, int line) {
-    printf("%s:%d ERROR# %d: %s", file, line, error, gp_result_as_string(error));
-    return nullptr;
-}
-
 orchid::camera::camera(Camera* cam, GPContext* ctx) : d_cam(cam), d_ctx(ctx) { 
     gp_camera_new(&d_cam);
 }
@@ -161,17 +33,15 @@ std::string orchid::camera::get_driver_summary() {
     return std::string(text.text);
 }
 
-bool orchid::camera::set_camera_config(Json::Value& root) {
+void orchid::camera::set_camera_config(Json::Value& root) {
     CameraWidget* child = nullptr;
     CameraWidgetType type;
 
-//    std::cout << root << std::endl;
-
     if(gp_widget_get_child_by_name(d_widget, root["key"].asCString(), &child) < GP_OK)
-        return false;
+        throw cam_except("Cannot get child: " + root["key"].asString());
 
     if(gp_widget_get_type(child, &type) < GP_OK)
-        return false;
+        throw cam_except("Cannot get type of widget: " + root["key"].asString());
 
     switch(type) {
         case GP_WIDGET_MENU:
@@ -179,29 +49,28 @@ bool orchid::camera::set_camera_config(Json::Value& root) {
         case GP_WIDGET_TEXT: {
             auto temp = root["value"].asCString();
             if(gp_widget_set_value(child, temp) < GP_OK)
-                return false;
+                throw cam_except("Cannot set value of widget: " + root["key"].asString());
             break;
         }
         case GP_WIDGET_RANGE: {
             auto temp = root["value"].asFloat();
             if(gp_widget_set_value(child, &temp) < GP_OK)
-                return false;
+                throw cam_except("Cannot set value of widget: " + root["key"].asString());
             break;
         }
         case GP_WIDGET_DATE:
         case GP_WIDGET_TOGGLE: {
             auto temp = root["value"].asInt();
             if(gp_widget_set_value(child, &temp) < GP_OK)
-                return false;
+                throw cam_except("Cannot set value of widget: " + root["key"].asString());
             break;
         }
         default: {
-            return false;
+            throw cam_except("Unknown widget type: " + root["key"].asString());
         }
     }
     if(gp_camera_set_config(d_cam, d_widget, d_ctx) < GP_OK)
-        return false;
-    return true;
+        throw cam_except("Cannot set config of widget: " + root["key"].asString());
 }
 
 #define WAITTIME        100
@@ -217,16 +86,16 @@ std::string orchid::camera::capture(std::string& fn) {
     strcpy(path.name, full_fn.c_str());
 
     if(gp_camera_capture(d_cam, GP_CAPTURE_IMAGE, &path, d_ctx) < GP_OK)
-        return "";
+        throw cam_except("Capture failed.");
 
     if(gp_file_new(&file) < GP_OK)
-        return "";
+        throw cam_except("File malloc failed");
     if(gp_camera_file_get(d_cam, path.folder, path.name, GP_FILE_TYPE_NORMAL, file, d_ctx) < GP_OK)
-        return "";
+        throw cam_except("File download from camera failed.");
     if(gp_file_save(file, full_path.c_str()) < GP_OK)
-        return "";
+        throw cam_except("File save to filesystem failed.");
     if(gp_camera_file_delete(d_cam, path.folder, path.name, d_ctx) < GP_OK)
-        return "";
+        throw cam_except("Deleting file from camera failed.");
 
     gp_file_free(file);
 
@@ -369,7 +238,7 @@ Json::Value orchid::camera::get_list_data(CameraWidget* child) {
     Json::Value vec;
     int numc = gp_widget_count_choices(child);
     if(numc < GP_OK)
-        return vec;
+        throw cam_except("Cannor retrieve number of choices.");
     for(int i = 0; i < numc; i++) {
         const char* namec;
         if(gp_widget_get_choice(child, i, &namec) < GP_OK)
@@ -377,6 +246,125 @@ Json::Value orchid::camera::get_list_data(CameraWidget* child) {
         vec.append(std::string(namec));
     }
     return vec;
+}
+
+orchid::camera_list::camera_list() { gp_list_new(&d_list); }
+
+orchid::camera_list::~camera_list() { gp_list_free(d_list); }
+
+void orchid::camera_list::refresh_list(GPContext* ctx) {
+    d_cam_ring.erase(d_cam_ring.begin(), d_cam_ring.end());
+
+    if(gp_list_reset(d_list) < GP_OK)
+        throw cam_except("gp_list_reset failed.");
+    if(gp_camera_autodetect(d_list, ctx) < GP_OK)
+        throw cam_except("Camera autodetect failed.");
+
+    d_cam_ring.reserve(this->size());
+    create_cameras(ctx);
+}
+
+Json::Value orchid::camera_list::get_camera_tree(int index) {
+    return d_cam_ring[index]->get_camera_config();
+}
+
+Json::Value orchid::camera_list::get_full_tree() {
+    Json::Value root, array;
+    for(auto i = 0u; i < d_cam_ring.size(); i++)
+        array[i] = this->get_camera_tree(i);
+    root["cameras"] = array;
+    return root;
+}
+
+void orchid::camera_list::set_camera_attribute(Json::Value& val) {
+    d_cam_ring[val["index"].asInt()]->set_camera_config(val);
+}
+
+std::string orchid::camera_list::capture(int index, std::string& fn) {
+    return std::move(d_cam_ring[index]->capture(fn));
+}
+
+int orchid::camera_list::size() { return gp_list_count(d_list); }
+
+void orchid::camera_list::create_cameras(GPContext* ctx) {
+    for(auto i = 0u; i < this->size(); i++) {
+        try {
+            d_cam_ring.push_back(std::move(create_camera(i, ctx)));
+        }
+        catch(camera_exception& e) {
+            std::cout << e.what() << std::endl;
+        }
+    }
+}
+
+std::vector<std::string> orchid::camera_list::get_name_list() {
+    std::vector<std::string> ret;
+    ret.reserve(this->size());
+
+    for(auto i = 0; i < this->size(); i++) {
+        const char* name;
+        gp_list_get_name(d_list, i, &name);
+        ret.push_back(std::string(name));
+    }
+    return ret;
+}
+
+orchid::unique_cam orchid::camera_list::create_camera(int index, GPContext* ctx) {
+    const char* model;
+    const char* port;
+    int ret, m, p;
+    CameraAbilities a;
+    GPPortInfo pi;
+    Camera* cam;
+    CameraAbilitiesList* abilities_list;
+    GPPortInfoList* pi_list;
+
+    gp_list_get_name(d_list, index, &model);
+    gp_list_get_value(d_list, index, &port);
+
+    if((ret = gp_camera_new(&cam)) < GP_OK)
+        throw cam_except("create_camera: error# " + ret + ": " + gp_result_as_string(ret));
+
+    if((ret = gp_abilities_list_new(&abilities_list)) < GP_OK)
+        throw cam_except("create_camera: error# " + ret + ": " + gp_result_as_string(ret));
+    if((ret = gp_abilities_list_load(abilities_list, ctx)) < GP_OK)
+        throw cam_except("create_camera: error# " + ret + ": " + gp_result_as_string(ret));
+
+    if((m = gp_abilities_list_lookup_model(abilities_list, model)) < GP_OK)
+        throw cam_except("create_camera: error# " + ret + ": " + gp_result_as_string(ret));
+    if((ret = gp_abilities_list_get_abilities(abilities_list, m, &a)) < GP_OK)
+        throw cam_except("create_camera: error# " + ret + ": " + gp_result_as_string(ret));
+    if((ret = gp_camera_set_abilities(cam, a)) < GP_OK)
+        throw cam_except("create_camera: error# " + ret + ": " + gp_result_as_string(ret));
+
+    if((ret = gp_port_info_list_new(&pi_list)) < GP_OK)
+        throw cam_except("create_camera: error# " + ret + ": " + gp_result_as_string(ret));
+    if((ret = gp_port_info_list_load(pi_list)) < GP_OK)
+        throw cam_except("create_camera: error# " + ret + ": " + gp_result_as_string(ret));
+    if((gp_port_info_list_count(pi_list)) < GP_OK)
+        throw cam_except("create_camera: error# " + ret + ": " + gp_result_as_string(ret));
+
+    if((p = gp_port_info_list_lookup_path(pi_list, port)) == GP_ERROR_UNKNOWN_PORT) {
+        fprintf(stderr, "The port you specified ('%s') cannot be found.\n", port);
+        throw cam_except("create_camera: error# " + p + ": " + gp_result_as_string(p));
+    }
+    else if(p < GP_OK)
+        throw cam_except("create_camera: error# " + p + ": " + gp_result_as_string(p));
+
+    if((ret = gp_port_info_list_get_info(pi_list, p, &pi)) < GP_OK)
+        throw cam_except("create_camera: error# " + ret + ": " + gp_result_as_string(ret));
+    if((ret = gp_camera_set_port_info(cam, pi)) < GP_OK)
+        throw cam_except("create_camera: error# " + ret + ": " + gp_result_as_string(ret));
+
+    return std::make_unique<orchid::camera>(cam, ctx);
+}
+
+orchid::unique_cam orchid::camera_list::create_camera(std::string name, GPContext* ctx) {
+    int ret, index;
+    auto cname = name.c_str();
+    if((ret = gp_list_find_by_name(d_list, &index, cname)) == GP_OK)
+        return this->create_camera(index, ctx);
+    return nullptr;
 }
 
 orchid::app::app() {
@@ -389,8 +377,8 @@ orchid::app::~app() {
     gp_context_unref(d_ctx);
 }
 
-bool orchid::app::init() {
-    return d_cam_list.refresh_list(d_ctx);
+void orchid::app::init() {
+    d_cam_list.refresh_list(d_ctx);
 }
 
 std::string orchid::app::get_tree() {
@@ -402,8 +390,8 @@ std::string orchid::app::get_tree() {
     return writer.write(d_cam_list.get_full_tree());
 }
 
-bool orchid::app::set_value(Json::Value& val) {
-    return d_cam_list.set_camera_attribute(val);
+void orchid::app::set_value(Json::Value& val) {
+    d_cam_list.set_camera_attribute(val);
 }
 
 std::string orchid::app::capture(Json::Value& val) {
