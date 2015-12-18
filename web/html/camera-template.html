@@ -46,6 +46,7 @@
     <div class="modal-body">
         <img ng-src="{{serial.img}}" height="560" width="560"/>
     </div>
+    <hr>
     <div class="modal-footer">
         <button class="btn btn-success" type="button" ng-click="accept()">Accept</button>
         <button class="btn btn-warning" type="button" ng-click="reject()">Reject</button>
@@ -66,8 +67,13 @@
 		    		</button>
 			    </uib-accordion-group>
 			</uib-accordion>
-      		<div ng-repeat="z in t.zchildren" ng-include="'json_recursion.html'">
-      		</div>
+			<hr>
+			<button type="button" class="btn btn-default" ng-click="settingsCollapsed = !settingsCollapsed">Settings</button>
+			<hr>
+			<div uib-collapse="settingsCollapsed">
+				<div class="well well-lg" ng-repeat="z in t.zchildren" ng-include="'json_recursion.html'">
+      			</div>
+			</div>
     	</uib-tab>
 	</uib-tabset>
 </div>

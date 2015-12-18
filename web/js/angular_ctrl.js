@@ -52,7 +52,9 @@
     $scope.serial = {
       value: "",
       img: ""
-    }
+    };
+
+    $scope.settingsCollapsed = true;
 
     $http.get("refresh.live").success(function (response) {
       store.data = response;
