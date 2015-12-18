@@ -287,11 +287,11 @@ std::string orchid::camera_list::capture(int index, std::string& fn) {
 int orchid::camera_list::size() { return gp_list_count(d_list); }
 
 void orchid::camera_list::create_cameras(GPContext* ctx) {
-    for(auto i = 0u; i < this->size(); i++) {
+    for(auto i = 0; i < this->size(); i++) {
         try {
             d_cam_ring.push_back(std::move(create_camera(i, ctx)));
         }
-        catch(camera_exception& e) {
+        catch(cam_exception& e) {
             std::cout << e.what() << std::endl;
         }
     }
@@ -323,38 +323,38 @@ orchid::unique_cam orchid::camera_list::create_camera(int index, GPContext* ctx)
     gp_list_get_value(d_list, index, &port);
 
     if((ret = gp_camera_new(&cam)) < GP_OK)
-        throw cam_except("create_camera: error# " + ret + ": " + gp_result_as_string(ret));
+        throw cam_except("create_camera: error# " + std::to_string(ret) + ": " + gp_result_as_string(ret));
 
     if((ret = gp_abilities_list_new(&abilities_list)) < GP_OK)
-        throw cam_except("create_camera: error# " + ret + ": " + gp_result_as_string(ret));
+        throw cam_except("create_camera: error# " + std::to_string(ret) + ": " + gp_result_as_string(ret));
     if((ret = gp_abilities_list_load(abilities_list, ctx)) < GP_OK)
-        throw cam_except("create_camera: error# " + ret + ": " + gp_result_as_string(ret));
+        throw cam_except("create_camera: error# " + std::to_string(ret) + ": " + gp_result_as_string(ret));
 
     if((m = gp_abilities_list_lookup_model(abilities_list, model)) < GP_OK)
-        throw cam_except("create_camera: error# " + ret + ": " + gp_result_as_string(ret));
+        throw cam_except("create_camera: error# " + std::to_string(ret) + ": " + gp_result_as_string(ret));
     if((ret = gp_abilities_list_get_abilities(abilities_list, m, &a)) < GP_OK)
-        throw cam_except("create_camera: error# " + ret + ": " + gp_result_as_string(ret));
+        throw cam_except("create_camera: error# " + std::to_string(ret) + ": " + gp_result_as_string(ret));
     if((ret = gp_camera_set_abilities(cam, a)) < GP_OK)
-        throw cam_except("create_camera: error# " + ret + ": " + gp_result_as_string(ret));
+        throw cam_except("create_camera: error# " + std::to_string(ret) + ": " + gp_result_as_string(ret));
 
     if((ret = gp_port_info_list_new(&pi_list)) < GP_OK)
-        throw cam_except("create_camera: error# " + ret + ": " + gp_result_as_string(ret));
+        throw cam_except("create_camera: error# " + std::to_string(ret) + ": " + gp_result_as_string(ret));
     if((ret = gp_port_info_list_load(pi_list)) < GP_OK)
-        throw cam_except("create_camera: error# " + ret + ": " + gp_result_as_string(ret));
+        throw cam_except("create_camera: error# " + std::to_string(ret) + ": " + gp_result_as_string(ret));
     if((gp_port_info_list_count(pi_list)) < GP_OK)
-        throw cam_except("create_camera: error# " + ret + ": " + gp_result_as_string(ret));
+        throw cam_except("create_camera: error# " + std::to_string(ret) + ": " + gp_result_as_string(ret));
 
     if((p = gp_port_info_list_lookup_path(pi_list, port)) == GP_ERROR_UNKNOWN_PORT) {
         fprintf(stderr, "The port you specified ('%s') cannot be found.\n", port);
-        throw cam_except("create_camera: error# " + p + ": " + gp_result_as_string(p));
+        throw cam_except("create_camera: error# " + std::to_string(p) + ": " + gp_result_as_string(p));
     }
     else if(p < GP_OK)
-        throw cam_except("create_camera: error# " + p + ": " + gp_result_as_string(p));
+        throw cam_except("create_camera: error# " + std::to_string(p) + ": " + gp_result_as_string(p));
 
     if((ret = gp_port_info_list_get_info(pi_list, p, &pi)) < GP_OK)
-        throw cam_except("create_camera: error# " + ret + ": " + gp_result_as_string(ret));
+        throw cam_except("create_camera: error# " + std::to_string(ret) + ": " + gp_result_as_string(ret));
     if((ret = gp_camera_set_port_info(cam, pi)) < GP_OK)
-        throw cam_except("create_camera: error# " + ret + ": " + gp_result_as_string(ret));
+        throw cam_except("create_camera: error# " + std::to_string(ret) + ": " + gp_result_as_string(ret));
 
     return std::make_unique<orchid::camera>(cam, ctx);
 }

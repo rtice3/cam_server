@@ -3,26 +3,26 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 
-#include <curlpp/cURLpp.hpp>
-#include <curlpp/Easy.hpp>
-#include <curlpp/Options.hpp>
-#include <curlpp/Exception.hpp>
-
 #include "server.h"
 
 #define FTP_SERVER   "ftp://green.local"
 
+static const char* s_http_root = "../web";
+static const char* s_http_port = "8000";
+static struct mg_serve_http_opts s_http_server_opts;
 
 static void ev_handler(struct mg_connection* nc, int ev, void* ev_data) {
 	((orchid::server*)nc->user_data)->handler(nc, ev, (struct http_message*)ev_data);
 }
 
-orchid::server::server(std::string root, std::string port) {
+orchid::server::server() {
 	mg_mgr_init(&d_mgr, NULL);
-	d_nc = mg_bind(&d_mgr, port.c_str(), ev_handler);
+	d_nc = mg_bind(&d_mgr, s_http_port, ev_handler);
 
 	mg_set_protocol_http_websocket(d_nc);
-	s_http_server_opts.document_root = root.c_str();
+	s_http_server_opts.document_root = s_http_root;
+//	d_http_opts.enable_directory_listing = "no";
+//	d_http_opts.index_files = NULL;
 
 	d_nc->user_data = (void*)this;
 }
@@ -68,25 +68,15 @@ void orchid::server::handler(struct mg_connection* nc, int ev, struct http_messa
 					post(nc);
 				}
 				else if(mg_vcmp(&hm->uri, "/save_img") == 0) {
-					orchid::ftp ftp(FTP_SERVER, std::string(hm->body.p, hm->body.len));
-					std::string ret;
-					try {
-						ret = ftp();
-					}
-					catch (curlpp::LogicError & e) {
-						ret = e.what();
-					}
-					catch (curlpp::RuntimeError & e) {
-						ret = e.what();
-					}
-					orchid::server::xmit_txt(nc, ret);	
+					auto fn = std::string(s_http_root) + "/" + std::string(hm->body.p, hm->body.len);
+					std::cout << "FTPing: " << fn << std::endl;
 				}
 				else if(mg_vcmp(&hm->uri, "/reject_img") == 0) {
 					std::string ret = "";
-					auto img = std::string(hm->body.p, hm->body.len);
+					auto img = std::string(s_http_root) + "/" + std::string(hm->body.p, hm->body.len);
 					std::cout << "Deleting: " << img << std::endl;
 					if(::remove(img.c_str()))
-						ret = "Failed: " + std::to_string(errno);
+						ret = "Failed to delete " + img + ": " + std::to_string(errno);
 					orchid::server::xmit_txt(nc, ret);
 				}
 				else
@@ -108,7 +98,7 @@ void orchid::server::handler(struct mg_connection* nc, int ev, struct http_messa
 					get(nc);
 				}
 				else {
-					mg_serve_http(d_nc, hm, d_http_opts);
+					mg_serve_http(nc, hm, s_http_server_opts);
 				}
 			}
 			break;
@@ -131,32 +121,4 @@ orchid::http::http(std::string st, std::function<std::string(Json::Value&)> func
 
 void orchid::http::operator()(struct mg_connection* nc) {
 	orchid::server::xmit_txt(nc, d_func(d_root));
-}
-
-orchid::ftp::ftp(std::string server, std::string fn) : d_server(server), d_fn(fn) { }
-
-
-std::string orchid::ftp::operator()(void) {
-	std::cout << "FTPing: " << d_fn << std::endl;
-
-	curlpp::Cleanup cleaner;
-	curlpp::Easy req;
-	struct stat finfo;
-
-	if(::stat(d_fn.c_str(), &finfo))
-		throw std::runtime_error("error stat'ing file: " + d_fn);
-
-	FILE* src = ::fopen(d_fn.c_str(), "rb");
-
-	req.setOpt(new curlpp::Options::Url(FTP_SERVER));
-	req.setOpt(new curlpp::Options::Upload(true));
-#ifdef DEBUG
-	req.setOpt(new curlpp::Options::Verbose(true));
-#endif
-	req.setOpt(new curlpp::Options::InfileSize(finfo.st_size));
-	req.setOpt(new curlpp::Options::ReadData(src));
-
-	req.perform();
-
-	return "";
 }

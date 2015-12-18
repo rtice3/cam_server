@@ -6,7 +6,7 @@
 
 
 int main(int argc, char** argv) {
-   orchid::server server("../web", "8000");
+   orchid::server server;
    server.poll(1000);
 
 	return 0;
