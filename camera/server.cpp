@@ -3,10 +3,9 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 
-#include "ftplib.h"
 #include "server.h"
 
-#define FTP_SERVER   "ftp://green.local:21"
+#define FTP_SERVER   "IGBT.local:98"
 
 static const char* s_http_root = "../web";
 static const char* s_http_port = "8000";
@@ -28,13 +27,15 @@ orchid::server::server() {
 //	d_http_opts.index_files = NULL;
 
 	d_nc->user_data = (void*)this;
-	d_ftp = new ftplib::ftplib();
+/*
+	d_ftp = std::make_unique<ftplib>();
 	if(d_ftp->Connect(FTP_SERVER) == 0)
 		throw cam_except("FTP connect failed.");
 	if(d_ftp->NegotiateEncryption() == 0)
 		throw cam_except("SSL Negotiation failed.");
 	if(d_ftp->Login("anonymous", "") == 0)
 		throw cam_except("FTP login failed.");
+*/
 }
 
 orchid::server::~server() {
@@ -81,15 +82,15 @@ void orchid::server::handler(struct mg_connection* nc, int ev, struct http_messa
 				else if(mg_vcmp(&hm->uri, "/save_img") == 0) {
 					std::string ret = "";
 					auto img = std::string(hm->body.p, hm->body.len);
-					auto fn = std::string(s_http_root) + "/" + img;
+					auto fn = std::string(s_http_root) + img;
 					std::cout << "FTPing: " << fn << std::endl;
-					if(d_ftp->Put(fn.c_str(), img.c_str(), ftplib::image) == 0)
-						ret = "FTP error";
+					//if(d_ftp->Put(fn.c_str(), img.c_str(), ftplib::image) == 0)
+					//	ret = "FTP error";
 					orchid::server::xmit_txt(nc, ret);
 				}
 				else if(mg_vcmp(&hm->uri, "/reject_img") == 0) {
 					std::string ret = "";
-					auto img = std::string(s_http_root) + "/" + std::string(hm->body.p, hm->body.len);
+					auto img = std::string(s_http_root) + std::string(hm->body.p, hm->body.len);
 					std::cout << "Deleting: " << img << std::endl;
 					if(::remove(img.c_str()))
 						ret = "Failed to delete " + img + ": " + std::to_string(errno);

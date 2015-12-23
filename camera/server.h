@@ -7,6 +7,7 @@
 
 #include "camera.h"
 #include "cam_exception.h"
+#include "ftplib.h"
 #include "mongoose.h"
 
 namespace orchid {
@@ -21,7 +22,7 @@ namespace orchid {
 		orchid::app d_app;
 		struct mg_mgr d_mgr;
 		struct mg_connection* d_nc;
-		ftplib* d_ftp;
+		std::unique_ptr<ftplib> d_ftp;
 	};
 
 	class http {

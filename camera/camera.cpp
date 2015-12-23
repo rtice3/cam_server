@@ -80,7 +80,7 @@ std::string orchid::camera::capture(std::string& fn) {
     CameraFilePath path;
 
     std::string full_fn = fn + ".jpg";
-    std::string full_path = "../web/" + full_fn;
+    std::string full_path = "../web/tmp/" + full_fn;
 
     strcpy(path.folder, "/");
     strcpy(path.name, full_fn.c_str());
@@ -98,6 +98,8 @@ std::string orchid::camera::capture(std::string& fn) {
         throw cam_except("Deleting file from camera failed.");
 
     gp_file_free(file);
+
+    full_fn = "/tmp/" + full_fn;
 
     return std::move(full_fn);
 }

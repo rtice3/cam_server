@@ -1,10 +1,10 @@
 CC				:= gcc
 CXX 			:= g++
 CFLAGS			:= -Wall -O0 -g
-CXXFLAGS 		:= --std=c++14 $(CFLAGS) -DDEBUG
+CXXFLAGS 		:= --std=c++14 $(CFLAGS) -DDEBUG -DMG_ENABLE_SSL
 INCLUDES 		:= -I../jsoncpp/dist/ -I../mongoose -I/usr/local/include -I../ftplibpp
 LFLAGS 			:= 
-LIBS 			:= -lgphoto2 -lgphoto2_port
+LIBS 			:= -lgphoto2 -lgphoto2_port -lssl -lcrypto
 
 CSOURCES		:= ../mongoose/mongoose.c
 CPPSOURCES		:= $(wildcard *.cpp) ../jsoncpp/dist/jsoncpp.cpp ../ftplibpp/ftplib.cpp
