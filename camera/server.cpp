@@ -98,7 +98,7 @@ void orchid::server::handler(struct mg_connection* nc, int ev, struct http_messa
 						break;
 					}
 					d_lastimg->delete_img();
-					d_lastimg.reset();
+					d_lastimg.reset(nullptr);
 
 					orchid::server::xmit_txt(nc, ret);
 					ftp->Quit();
@@ -112,7 +112,7 @@ void orchid::server::handler(struct mg_connection* nc, int ev, struct http_messa
 						else {
 							std::cout << "Deleting: " << d_lastimg->get_img_abs() << std::endl;
 							ret = d_lastimg->delete_img();
-							d_lastimg.reset();
+							d_lastimg.reset(nullptr);
 						}
 					}
 
