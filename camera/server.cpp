@@ -107,11 +107,13 @@ void orchid::server::handler(struct mg_connection* nc, int ev, struct http_messa
 					}
 					d_lastimg->delete_img();
 					d_lastimg.reset();
+
 					orchid::server::xmit_txt(nc, ret);
 					ftp->Quit();
 				}
 				else if(mg_vcmp(&hm->uri, "/reject_img") == 0) {
 					std::string ret = "";
+
 					auto img = std::string(hm->body.p, hm->body.len);
 					if(d_lastimg) {
 						if(img != orchid::img::to_web(d_lastimg->get_thumb())) {
@@ -123,6 +125,7 @@ void orchid::server::handler(struct mg_connection* nc, int ev, struct http_messa
 							d_lastimg.reset();
 						}
 					}
+
 					orchid::server::xmit_txt(nc, ret);
 				}
 				else

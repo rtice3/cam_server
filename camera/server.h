@@ -23,7 +23,6 @@ namespace orchid {
 		orchid::app d_app;
 		struct mg_mgr d_mgr;
 		struct mg_connection* d_nc;
-
 		std::unique_ptr<orchid::img> d_lastimg;
 	};
 
