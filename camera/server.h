@@ -8,7 +8,6 @@
 #include "camera.h"
 #include "cam_exception.h"
 #include "ftplib.h"
-#include "img.h"
 #include "mongoose.h"
 
 namespace orchid {

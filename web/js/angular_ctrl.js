@@ -78,7 +78,7 @@
     $scope.capture = function() {
       var jsn = {};
       jsn['index'] = tab;
-      jsn['filename'] = $scope.serial.value;
+      jsn['serial'] = $scope.serial.value;
       $http.post("capture", angular.toJson(jsn)).success(function (response) {
         var rgx = /.*\.jpg/;
         if(rgx.test(response)) {

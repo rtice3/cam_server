@@ -7,12 +7,8 @@
 
 #define FTP_SERVER   "IGBT.local:2121"
 
-static const char* s_http_root = "../web";
-static const char* s_img_root = "../web/tmp/";
 static const char* s_http_port = "8000";
 static struct mg_serve_http_opts s_http_server_opts;
-
-static const char* s_ftp_root = "";
 
 static void ev_handler(struct mg_connection* nc, int ev, void* ev_data) {
 	((orchid::server*)nc->user_data)->handler(nc, ev, (struct http_message*)ev_data);
@@ -23,9 +19,7 @@ orchid::server::server() {
 	d_nc = mg_bind(&d_mgr, s_http_port, ev_handler);
 
 	mg_set_protocol_http_websocket(d_nc);
-	s_http_server_opts.document_root = s_http_root;
-//	d_http_opts.enable_directory_listing = "no";
-//	d_http_opts.index_files = NULL;
+	s_http_server_opts.document_root = s_web_root;
 
 	d_nc->user_data = (void*)this;
 }
@@ -62,8 +56,8 @@ void orchid::server::handler(struct mg_connection* nc, int ev, struct http_messa
 						std::string ret;
 						try {
 							if(!d_lastimg)
-								d_lastimg = std::make_unique<orchid::img>(std::string(s_img_root + d_app.capture(root)));
-							ret = orchid::img::to_web(d_lastimg->get_thumb());
+								d_lastimg = d_app.capture(root);
+							ret = d_lastimg->get_thumb_web();
 						}
 						catch(cam_exception& e) {
 							ret = std::string(e.what());
@@ -75,13 +69,13 @@ void orchid::server::handler(struct mg_connection* nc, int ev, struct http_messa
 				else if(mg_vcmp(&hm->uri, "/save_img") == 0) {
 					std::unique_ptr<ftplib> ftp = std::make_unique<ftplib>();
 					std::string ret = "";
-					auto img = orchid::img::from_web(std::string(hm->body.p, hm->body.len));
+					auto thumb = std::string(hm->body.p, hm->body.len);
 					if(!d_lastimg) {
 						ret = "No img on deck.";
 						orchid::server::xmit_txt(nc, ret);
 						break;
 					}
-					if(img != d_lastimg->get_thumb()) {
+					if(thumb != d_lastimg->get_thumb_web()) {
 						ret = "Img ID doesn't match img on deck.";
 						orchid::server::xmit_txt(nc, ret);
 						break;
@@ -96,10 +90,8 @@ void orchid::server::handler(struct mg_connection* nc, int ev, struct http_messa
 						orchid::server::xmit_txt(nc, ret);
 						break;
 					}
-					auto fimg = orchid::img::to_web(d_lastimg->get_img());
-					fimg.erase(0, 4);
-					std::cout << "FTPing: " << d_lastimg->get_img() << " as " << fimg << std::endl;
-					if(ftp->Put(d_lastimg->get_img().c_str(), fimg.c_str(), ftplib::image) == 0) {
+					std::cout << "FTPing: " << d_lastimg->get_img_abs() << " as " << d_lastimg->get_ftp_name() << std::endl;
+					if(ftp->Put(d_lastimg->get_img_abs().c_str(), d_lastimg->get_ftp_name().c_str(), ftplib::image) == 0) {
 						ret = "FTP error";
 						orchid::server::xmit_txt(nc, ret);
 						ftp->Quit();
@@ -113,14 +105,12 @@ void orchid::server::handler(struct mg_connection* nc, int ev, struct http_messa
 				}
 				else if(mg_vcmp(&hm->uri, "/reject_img") == 0) {
 					std::string ret = "";
-
-					auto img = std::string(hm->body.p, hm->body.len);
+					auto thumb = std::string(hm->body.p, hm->body.len);
 					if(d_lastimg) {
-						if(img != orchid::img::to_web(d_lastimg->get_thumb())) {
+						if(thumb != d_lastimg->get_thumb_web())) 
 							ret = "Img ID doesn't match img on deck.";
-						}
 						else {
-							std::cout << "Deleting: " << img << std::endl;
+							std::cout << "Deleting: " << d_lastimg->get_img_abs() << std::endl;
 							ret = d_lastimg->delete_img();
 							d_lastimg.reset();
 						}

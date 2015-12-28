@@ -9,8 +9,11 @@
 #include <json/json.h>
 
 #include "cam_exception.h"
+#include "img.h"
 
 namespace orchid {
+
+	using unique_img = std::unique_ptr<orchid::img>;
 
 	class camera {
 	public:
@@ -19,7 +22,7 @@ namespace orchid {
 
 		Json::Value get_camera_config();
 		void set_camera_config(Json::Value&);
-		std::string capture(std::string&);
+		unique_img capture(std::string&);
 	private:
 		Camera* d_cam;
 		CameraWidget* d_widget;
@@ -43,7 +46,7 @@ namespace orchid {
 		Json::Value get_camera_tree(int);
 		Json::Value get_full_tree();
 		void set_camera_attribute(Json::Value&);
-		std::string capture(int, std::string&);
+		unique_img capture(int, std::string&);
 	private:
 		CameraList* d_list;
 		camera_ring d_cam_ring;
@@ -63,7 +66,7 @@ namespace orchid {
 		void init();
 		std::string get_tree();
 		void set_value(Json::Value&);
-		std::string capture(Json::Value&);
+		unique_img capture(Json::Value&);
 	private:
 		GPContext* d_ctx;
 		orchid::camera_list d_cam_list;

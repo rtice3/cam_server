@@ -75,15 +75,14 @@ void orchid::camera::set_camera_config(Json::Value& root) {
 
 #define WAITTIME        100
 
-std::string orchid::camera::capture(std::string& fn) {
+orchid::unique_img orchid::camera::capture(std::string& serial) {
     CameraFile* file;
     CameraFilePath path;
 
-    std::string full_fn = fn + ".jpg";
-    std::string full_path = "../web/tmp/" + full_fn;
+    orchid::unique_img img = std::make_unique<orchid::img>(serial);
 
     strcpy(path.folder, "/");
-    strcpy(path.name, full_fn.c_str());
+    strcpy(path.name, img->get_img_abs().c_str());
 
     if(gp_camera_capture(d_cam, GP_CAPTURE_IMAGE, &path, d_ctx) < GP_OK)
         throw cam_except("Capture failed.");
@@ -92,14 +91,16 @@ std::string orchid::camera::capture(std::string& fn) {
         throw cam_except("File malloc failed");
     if(gp_camera_file_get(d_cam, path.folder, path.name, GP_FILE_TYPE_NORMAL, file, d_ctx) < GP_OK)
         throw cam_except("File download from camera failed.");
-    if(gp_file_save(file, full_path.c_str()) < GP_OK)
+    if(gp_file_save(file, img->get_img_abs().c_str()) < GP_OK)
         throw cam_except("File save to filesystem failed.");
     if(gp_camera_file_delete(d_cam, path.folder, path.name, d_ctx) < GP_OK)
         throw cam_except("Deleting file from camera failed.");
 
     gp_file_free(file);
 
-    return std::move(full_fn);
+    img->resize();
+
+    return std::move(img);
 }
 
 Json::Value orchid::camera::get_child(CameraWidget* parent, int num_children) {
@@ -280,8 +281,8 @@ void orchid::camera_list::set_camera_attribute(Json::Value& val) {
     d_cam_ring[val["index"].asInt()]->set_camera_config(val);
 }
 
-std::string orchid::camera_list::capture(int index, std::string& fn) {
-    return std::move(d_cam_ring[index]->capture(fn));
+orchid::unique_img orchid::camera_list::capture(int index, std::string& serial) {
+    return std::move(d_cam_ring[index]->capture(serial));
 }
 
 int orchid::camera_list::size() { return gp_list_count(d_list); }
@@ -394,10 +395,10 @@ void orchid::app::set_value(Json::Value& val) {
     d_cam_list.set_camera_attribute(val);
 }
 
-std::string orchid::app::capture(Json::Value& val) {
+orchid::unique_img orchid::app::capture(Json::Value& val) {
     auto index = val["index"].asInt();
-    auto fn = val["filename"].asString();
-    return std::move(d_cam_list.capture(index, fn));
+    auto serial = val["serial"].asString();
+    return std::move(d_cam_list.capture(index, serial));
 }
 
 void orchid::app::ctx_error(GPContext *context, const char *str, void *data) {
