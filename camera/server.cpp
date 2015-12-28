@@ -3,12 +3,12 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 
-#include "ftplib.h"
 #include "server.h"
 
-#define FTP_SERVER   "ftp://green.local:21"
+#define FTP_SERVER   "IGBT.local:2121"
 
 static const char* s_http_root = "../web";
+static const char* s_img_root = "../web/tmp/";
 static const char* s_http_port = "8000";
 static struct mg_serve_http_opts s_http_server_opts;
 
@@ -28,18 +28,10 @@ orchid::server::server() {
 //	d_http_opts.index_files = NULL;
 
 	d_nc->user_data = (void*)this;
-	d_ftp = new ftplib::ftplib();
-	if(d_ftp->Connect(FTP_SERVER) == 0)
-		throw cam_except("FTP connect failed.");
-	if(d_ftp->NegotiateEncryption() == 0)
-		throw cam_except("SSL Negotiation failed.");
-	if(d_ftp->Login("anonymous", "") == 0)
-		throw cam_except("FTP login failed.");
 }
 
 orchid::server::~server() {
 	mg_mgr_free(&d_mgr);
-	d_ftp->Quit();
 }
 
 void orchid::server::poll(int rate) {
@@ -69,7 +61,9 @@ void orchid::server::handler(struct mg_connection* nc, int ev, struct http_messa
 					orchid::http post(std::string(hm->body.p, hm->body.len), [&](Json::Value& root) {
 						std::string ret;
 						try {
-							ret = d_app.capture(root);
+							if(!d_lastimg)
+								d_lastimg = std::make_unique<orchid::img>(std::string(s_img_root + d_app.capture(root)));
+							ret = orchid::img::to_web(d_lastimg->get_thumb());
 						}
 						catch(cam_exception& e) {
 							ret = std::string(e.what());
@@ -79,20 +73,56 @@ void orchid::server::handler(struct mg_connection* nc, int ev, struct http_messa
 					post(nc);
 				}
 				else if(mg_vcmp(&hm->uri, "/save_img") == 0) {
+					std::unique_ptr<ftplib> ftp = std::make_unique<ftplib>();
 					std::string ret = "";
-					auto img = std::string(hm->body.p, hm->body.len);
-					auto fn = std::string(s_http_root) + "/" + img;
-					std::cout << "FTPing: " << fn << std::endl;
-					if(d_ftp->Put(fn.c_str(), img.c_str(), ftplib::image) == 0)
+					auto img = orchid::img::from_web(std::string(hm->body.p, hm->body.len));
+					if(!d_lastimg) {
+						ret = "No img on deck.";
+						orchid::server::xmit_txt(nc, ret);
+						break;
+					}
+					if(img != d_lastimg->get_thumb()) {
+						ret = "Img ID doesn't match img on deck.";
+						orchid::server::xmit_txt(nc, ret);
+						break;
+					}
+					if(ftp->Connect(FTP_SERVER) == 0) {
+						ret = "FTP connect failed.";
+						orchid::server::xmit_txt(nc, ret);
+						break;
+					}
+					if(ftp->Login("pi", "raspberry") == 0) {
+						ret = "FTP login failed.";
+						orchid::server::xmit_txt(nc, ret);
+						break;
+					}
+					auto fimg = orchid::img::to_web(d_lastimg->get_img());
+					fimg.erase(0, 4);
+					std::cout << "FTPing: " << d_lastimg->get_img() << " as " << fimg << std::endl;
+					if(ftp->Put(d_lastimg->get_img().c_str(), fimg.c_str(), ftplib::image) == 0) {
 						ret = "FTP error";
+						orchid::server::xmit_txt(nc, ret);
+						ftp->Quit();
+						break;
+					}
+					d_lastimg->delete_img();
+					d_lastimg.reset();
 					orchid::server::xmit_txt(nc, ret);
+					ftp->Quit();
 				}
 				else if(mg_vcmp(&hm->uri, "/reject_img") == 0) {
 					std::string ret = "";
-					auto img = std::string(s_http_root) + "/" + std::string(hm->body.p, hm->body.len);
-					std::cout << "Deleting: " << img << std::endl;
-					if(::remove(img.c_str()))
-						ret = "Failed to delete " + img + ": " + std::to_string(errno);
+					auto img = std::string(hm->body.p, hm->body.len);
+					if(d_lastimg) {
+						if(img != orchid::img::to_web(d_lastimg->get_thumb())) {
+							ret = "Img ID doesn't match img on deck.";
+						}
+						else {
+							std::cout << "Deleting: " << img << std::endl;
+							ret = d_lastimg->delete_img();
+							d_lastimg.reset();
+						}
+					}
 					orchid::server::xmit_txt(nc, ret);
 				}
 				else

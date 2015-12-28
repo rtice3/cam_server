@@ -80,7 +80,7 @@ std::string orchid::camera::capture(std::string& fn) {
     CameraFilePath path;
 
     std::string full_fn = fn + ".jpg";
-    std::string full_path = "../web/" + full_fn;
+    std::string full_path = "../web/tmp/" + full_fn;
 
     strcpy(path.folder, "/");
     strcpy(path.name, full_fn.c_str());
